@@ -87,19 +87,32 @@ class PembelianController extends Controller
     }
 
     public function tambahSesi(Request $request)
-    {
-        $barangBaru = [
-            'id' => $request->id,
-            'nama' => $request->nama,
-            'harga' => $request->harga,
-        ];
+{
+    $barangBaru = [
+        'id' => $request->id,
+        'nama' => $request->nama,
+        'harga' => $request->harga,
+    ];
 
-        $barangSesi = Session::get('pembelian_barang', []);
-        $barangSesi[$request->id] = $barangBaru;
-        Session::put('pembelian_barang', $barangSesi);
+    // Ambil barang yang sudah ada di sesi
+    $barangSesi = Session::get('pembelian_barang', []);
 
-        return response()->json(['message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $barangSesi]);
+    // Cek apakah barang sudah ada di sesi berdasarkan id
+    if (isset($barangSesi[$request->id])) {
+        // Jika sudah ada, kembalikan respons dengan status error
+        return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
     }
+
+    // Jika belum ada, tambahkan barang baru ke sesi
+    $barangSesi[$request->id] = $barangBaru;
+
+    // Simpan kembali barang ke sesi
+    Session::put('pembelian_barang', $barangSesi);
+
+    // Kembalikan respons sukses
+    return response()->json(['status' => 'success', 'message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $barangSesi]);
+}
+
 
     public function hapusSesi(Request $request)
     {
@@ -144,10 +157,25 @@ class PembelianController extends Controller
             'harga' => $request->harga,
         ];
 
-        // Simpan data ke sesi
-        $data = Session::get('edit_pembelian_barang', []); // Ambil data sesi jika ada
-        $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
-        Session::put('edit_pembelian_barang', $data); // Simpan kembali ke sesi
+        // Ambil barang yang sudah ada di sesi
+        $data = Session::get('edit_pembelian_barang', []);
+
+        // Cek apakah barang sudah ada di sesi berdasarkan id
+        if (isset($data[$request->id])) {
+            // Jika sudah ada, kembalikan respons dengan status error
+            return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+        }
+
+        // Jika belum ada, tambahkan barang baru ke sesi
+        $data[$request->id] = $barang;
+
+        // Simpan kembali barang ke sesi
+        Session::put('edit_pembelian_barang', $data);
+
+        // // Simpan data ke sesi
+        // $data = Session::get('edit_pembelian_barang', []); // Ambil data sesi jika ada
+        // $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
+        // Session::put('edit_pembelian_barang', $data); // Simpan kembali ke sesi
 
         return response()->json(['message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $data]);
     }
@@ -202,21 +230,34 @@ class PembelianController extends Controller
     }
 
     public function laporan()
-    {
-        // Ambil laporan pembelian dengan join ke beberapa tabel
-        $pembelian = DB::table('pembelian')
-            ->join('barang_pembelian', 'pembelian.id', '=', 'barang_pembelian.pembelian_id')
-            ->join('barang', 'barang_pembelian.barang_id', '=', 'barang.id')
-            ->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
-            ->select(
-                'pembelian.*',
-                'barang.nama as barang_nama',
-                'supplier.nama as nama_supplier',
-                'barang_pembelian.harga as harga'
-            )
-            ->get();
+{
+    // Ambil laporan pembelian dengan join ke beberapa tabel
+    $pembelian = DB::table('pembelian')
+        ->join('barang_pembelian', 'pembelian.id', '=', 'barang_pembelian.pembelian_id')
+        ->join('barang', 'barang_pembelian.barang_id', '=', 'barang.id')
+        ->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
+        ->join('user', 'pembelian.user_id', '=', 'user.id')
+        ->select(
+            'pembelian.id', // Ambil ID pembelian untuk mengelompokkan data
+            'pembelian.tanggal_transaksi',
+            'supplier.nama as nama_supplier',
+            DB::raw('GROUP_CONCAT(barang.nama SEPARATOR ", ") as barang_nama'), // Gabungkan nama barang
+            DB::raw('SUM(pembelian.total_harga) as total_harga'), // Hitung total harga pembelian
+            DB::raw('SUM(barang_pembelian.jumlah) as total_item'), // Hitung total jumlah item
+            'user.name as nama_user',
+        )
+        ->groupBy('pembelian.id', 'pembelian.tanggal_transaksi', 'supplier.nama', 'user.name') // Kelompokkan berdasarkan id pembelian
+        ->get();
 
-        // Kirim data laporan pembelian ke view
-        return view('pembelian.laporanpembelian', compact('pembelian'));
-    }
+    // Ambil data penjualan hari ini
+    $pembelianDetail = Pembelian::join('user', 'pembelian.user_id', '=', 'user.id')
+    ->leftJoin('supplier', 'pembelian.supplier_id', '=', 'supplier.id') // Join dengan tabel supplier
+    ->select('pembelian.*', 'user.name as user_nama', 'supplier.nama as supplier_nama') // Pilih nama customer
+    ->orderBy('pembelian.tanggal_transaksi', 'desc')
+    ->get();
+
+    // Kirim data laporan pembelian ke view
+    return view('pembelian.laporanpembelian', compact('pembelian', 'pembelianDetail'));
+}
+
 }

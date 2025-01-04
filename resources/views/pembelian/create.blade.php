@@ -244,7 +244,12 @@
                             location.reload();
                         },
                         error: function(xhr) {
-                            console.error(xhr.responseText);
+                            // Tampilkan pesan error jika barang sudah dipilih
+                            if (xhr.status === 400) {
+                                alert(xhr.responseJSON.message); // Menampilkan pesan error dari response JSON
+                            } else {
+                                console.error(xhr.responseText);
+                            }
                         },
                     });
                 });

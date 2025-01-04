@@ -231,6 +231,12 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
         sessionStorage.clear();
     });
 
+     // Ambil semua ID barang yang ada di tabel dan simpan dalam array barangIds
+     var barangIds = [];
+    $('#selectedBarangTable tbody tr').each(function() {
+        var barangId = $(this).data('id');
+        barangIds.push(barangId);
+    });
 
             // Saat memilih barang dari modal
             $(document).on('click', '.pilihBarangBtn', function() {
@@ -238,27 +244,39 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                 const nama = $(this).data('nama');
                 const harga = $(this).data('harga');
 
-                // Simpan barang ke sesi melalui AJAX
-                $.ajax({
-                    url: '/penjualan/edit-tambah-sesi', // Endpoint untuk menambahkan barang ke sesi
-                    method: 'POST',
-                    data: {
-                        id: id,
-                        nama: nama,
-                        harga: harga,
-                        _token: '{{ csrf_token() }}', // Laravel CSRF Token
-                    },
-                    success: function(response) {
-                        console.log(response.message);
-                        // addBarangToTable(id, nama, harga); // Tampilkan barang di tabel
-                        sessionStorage.setItem('reload', 'true'); // Set flag reloadPage
-                        location.reload();
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                    },
-                });
+                // Cek apakah barang yang dipilih sudah ada di dalam tabel
+                if (barangIds.includes(id)) {
+                    // Tampilkan pesan notifikasi jika barang sudah ada
+                    alert('Barang sudah dipilih!');
+                } else {
+                    // Jika barang belum ada, kirimkan request AJAX untuk menambahkannya
+                    $.ajax({
+                        url: '/penjualan/edit-tambah-sesi', // Endpoint untuk menambahkan barang ke sesi
+                        method: 'POST',
+                        data: {
+                            id: id,
+                            nama: nama,
+                            harga: harga,
+                            _token: '{{ csrf_token() }}', // Laravel CSRF Token
+                        },
+                        success: function(response) {
+                            console.log(response.message);
+                            // Tambahkan barang ke tabel atau sesi (mungkin perlu memuat ulang tabel)
+                            sessionStorage.setItem('reload', 'true'); // Set flag reloadPage
+                            location.reload(); // Reload halaman untuk menampilkan barang yang baru
+                        },
+                        error: function(xhr) {
+                            // Tampilkan pesan error jika barang sudah dipilih
+                            if (xhr.status === 400) {
+                                alert(xhr.responseJSON.message); // Menampilkan pesan error dari response JSON
+                            } else {
+                                console.error(xhr.responseText);
+                            }
+                        },
+                    });
+                }
             });
+
 
 
 

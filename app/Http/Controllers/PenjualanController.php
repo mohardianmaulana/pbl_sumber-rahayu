@@ -99,10 +99,25 @@ class PenjualanController extends Controller
             'harga' => $request->harga,
         ];
 
-        // Simpan data ke sesi
-        $data = Session::get('penjualan_barang', []); // Ambil data sesi jika ada
-        $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
-        Session::put('penjualan_barang', $data); // Simpan kembali ke sesi
+        // Ambil barang yang sudah ada di sesi
+        $data = Session::get('penjualan_barang', []);
+
+        // Cek apakah barang sudah ada di sesi berdasarkan id
+        if (isset($data[$request->id])) {
+            // Jika sudah ada, kembalikan respons dengan status error
+            return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+        }
+
+        // Jika belum ada, tambahkan barang baru ke sesi
+        $data[$request->id] = $barang;
+
+        // Simpan kembali barang ke sesi
+        Session::put('penjualan_barang', $data);
+
+        // // Simpan data ke sesi
+        // $data = Session::get('penjualan_barang', []); // Ambil data sesi jika ada
+        // $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
+        // Session::put('penjualan_barang', $data); // Simpan kembali ke sesi
 
         return response()->json(['message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $data]);
     }
@@ -208,27 +223,46 @@ class PenjualanController extends Controller
 
 
     public function laporan()
-    {
-        // Get the start and end of the current month
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+{
+    // Get the start and end of the current month
+    $startOfMonth = Carbon::now()->startOfMonth();
+    $endOfMonth = Carbon::now()->endOfMonth();
 
-        $penjualan = DB::table('penjualan')
-            ->join('barang_penjualan', 'penjualan.id', '=', 'barang_penjualan.penjualan_id')
-            ->join('barang', 'barang_penjualan.barang_id', '=', 'barang.id')
-            ->join('customer', 'penjualan.customer_id', '=', 'customer.id')
-            ->join('user', 'penjualan.user_id', '=', 'user.id')
-            ->select(
-                'penjualan.*',
-                'barang.nama as barang_nama',
-                'barang_penjualan.jumlah as total_item',
-                'barang_penjualan.harga as total_harga',
-                'customer.nama as nama_customer',
-                'user.name as nama_user'
-            )
-            ->whereBetween('penjualan.tanggal_transaksi', [$startOfMonth, $endOfMonth])
-            ->get();
+    $penjualan = DB::table('penjualan')
+    ->join('barang_penjualan', 'penjualan.id', '=', 'barang_penjualan.penjualan_id')
+    ->join('barang', 'barang_penjualan.barang_id', '=', 'barang.id')
+    ->join('customer', 'penjualan.customer_id', '=', 'customer.id')
+    ->join('user', 'penjualan.user_id', '=', 'user.id')
+    ->select(
+        'penjualan.id',
+        'penjualan.tanggal_transaksi',
+        'penjualan.bayar',
+        'penjualan.kembali',
+        DB::raw('GROUP_CONCAT(barang.nama SEPARATOR ", ") as barang_nama'), // Gabungkan nama barang
+        DB::raw('SUM(barang_penjualan.jumlah) as total_item'), // Jumlah total item
+        DB::raw('SUM(barang_penjualan.harga) as total_harga'), // Total harga
+        'customer.nama as nama_customer',
+        'user.name as nama_user'
+    )
+    ->whereBetween('penjualan.tanggal_transaksi', [$startOfMonth, $endOfMonth])
+    ->groupBy(
+        'penjualan.id',
+        'penjualan.tanggal_transaksi',
+        'penjualan.bayar',
+        'penjualan.kembali',
+        'customer.nama',
+        'user.name'
+    ) // Tambahkan semua kolom non-agregasi
+    ->get();
 
-        return view('penjualan.laporanPenjualan', compact('penjualan'));
-    }
+    // Ambil data penjualan hari ini
+    $penjualanDetail = Penjualan::join('user', 'penjualan.user_id', '=', 'user.id')
+    ->leftJoin('customer', 'penjualan.customer_id', '=', 'customer.id') // Join dengan tabel customer
+    ->select('penjualan.*', 'user.name as user_nama', 'customer.nama as customer_nama') // Pilih nama customer
+    ->orderBy('penjualan.tanggal_transaksi', 'desc')
+    ->get();
+
+    return view('penjualan.laporanPenjualan', compact('penjualan', 'penjualanDetail'));
+}
+
 }

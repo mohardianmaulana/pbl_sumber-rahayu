@@ -43,7 +43,7 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('/barang/arsip', [BarangController::class, 'arsip'])->name('barang.lama')->middleware('can:view');
     Route::post('/barang/pulihkan/{id}', [BarangController::class, 'pulihkan'])->name('barang.pulihkan')->middleware('can:crud');
     Route::post('/barang/arsipkan/{id}', [BarangController::class, 'arsipkan'])->name('barang.arsipkan')->middleware('can:crud');
-    Route::get('/scan', [BarangController::class, 'scanPage'])->name('scan');
+    Route::get('/scan', [PembelianBarangBaruController::class, 'scanPage'])->name('scan');
     Route::post('/cek-qr', [BarangController::class, 'cekQrCode']);
     Route::get('/create_barang', [BarangController::class, 'create'])->name('create_barang');
     Route::get('/barang/{Barang}/edit', [BarangController::class, 'edit'])->name("barang.edit")->middleware('can:crud');
@@ -90,7 +90,7 @@ Route::middleware('auth', 'verified')->group(function () {
     // Route::get('/kategori/view/pdf', [KategoriController::class, 'view_pdf']);
 
     //***************************************************/ PEMBELIAN BARANG BARU /*****************************************//
-    Route::get('/pembelianBarang/create', [PembelianBarangBaruController::class, 'create'])->name('create')->middleware('can:crud');
+    Route::get('/pembelianBarang/create', [PembelianBarangBaruController::class, 'create'])->name('barangBaru.create')->middleware('can:crud');
     Route::post('/pembelianBarang', [PembelianBarangBaruController::class, 'store'])->name('store')->middleware('can:crud');
     Route::get('/pembelian/{Pembelian}/edit-barang-baru', [PembelianBarangBaruController::class, 'edit'])->name('editBarangBaru')->middleware('can:crud');
     Route::put('/pembelian/{Pembelian}/update-barang-baru', [PembelianBarangBaruController::class, 'update'])->name('updateBarangBaru')->middleware('can:crud');
