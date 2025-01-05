@@ -44,8 +44,8 @@ class Penjualan extends Model
         $penjualan = Penjualan::join('user', 'penjualan.user_id', '=', 'user.id')
             ->leftJoin('customer', 'penjualan.customer_id', '=', 'customer.id') // Join dengan tabel customer
             ->select('penjualan.*', 'user.name as user_nama', 'customer.nama as customer_nama') // Pilih nama customer
-            ->whereDate('penjualan.tanggal_transaksi', '=', $today)
-            ->orderBy('penjualan.tanggal_transaksi', 'desc')
+            ->whereDate('penjualan.created_at', '=', $today)
+            ->orderBy('penjualan.created_at', 'desc')
             ->get();
 
         // Ambil data customer yang statusnya 1
