@@ -257,6 +257,7 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                             id: id,
                             nama: nama,
                             harga: harga,
+                            source: 'modal',
                             _token: '{{ csrf_token() }}', // Laravel CSRF Token
                         },
                         success: function(response) {
@@ -545,36 +546,52 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                                     })
                                     .then(response => response.json())
                                     .then(data => {
-                                        if (data.exists) {
-                                            console.log(data.exists);
-                                            // Tampilkan nama barang yang berhasil dipindai
-                                            const notificationText = `Barang ${data.nama} berhasil ditambahkan!`;
-                                            $('#scanNotification').text(notificationText); // Update teks notifikasi
+            if (data.exists) {
+                console.log(data.exists);
+                // Ambil jumlah dari sessionStorage
+                let storedJumlah = sessionStorage.getItem('jumlah_' + data.id);
 
-                                            // Simpan barang ke sesi
-                                            $.ajax({
-                                                url: '/penjualan/edit-tambah-sesi',
-                                                method: 'POST',
-                                                data: {
-                                                    id: data.id,
-                                                    nama: data.nama,
-                                                    harga: data.harga,
-                                                    _token: '{{ csrf_token() }}',
-                                                },
-                                                success: function(response) {
-                                                    console.log(response.message);
-                                                    // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
-                                                    sessionStorage.setItem('reloadAndCalculate', 'true'); // Set flag reloadPage
-                                                    location.reload();
-                                                },
-                                                error: function(xhr) {
-                                                    console.error(xhr.responseText);
-                                                },
-                                            });
-                                        } else {
-                                            alert('Barang tidak ditemukan!');
-                                        }
-                                    });
+                // Perbarui jumlah di sessionStorage
+                let jumlahBaru = storedJumlah ? parseInt(storedJumlah) + 1 : 1;
+                sessionStorage.setItem('jumlah_' + data.id, jumlahBaru);
+
+                // Perbarui jumlah barang yang sudah ada di tabel
+                let barangTableRow = document.querySelector(`#selectedBarangTable tr[data-id="${data.id}"]`);
+                if (barangTableRow) {
+                    let inputJumlah = barangTableRow.querySelector('.jumlah-barang');
+                    inputJumlah.value = parseInt(inputJumlah.value) + 1; // Tambahkan jumlah di tabel
+                } else {
+                    // Jika barang tidak ditemukan di tabel, kirim ke backend
+                    $.ajax({
+                        url: '/penjualan/edit-tambah-sesi',
+                        method: 'POST',
+                        data: {
+                            id: data.id,
+                            nama: data.nama,
+                            harga: data.harga,
+                            jumlah: jumlahBaru, // Kirim jumlah yang diperbarui
+                            source: 'qr',
+                            _token: '{{ csrf_token() }}',
+                        },
+                        success: function(response) {
+                            console.log(response.message);
+                            // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
+                            sessionStorage.setItem('reloadAndCalculate', 'true');
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            if (xhr.status === 400) {
+                                alert(xhr.responseJSON.message);
+                            } else {
+                                console.error(xhr.responseText);
+                            }
+                        },
+                    });
+                }
+            } else {
+                alert('Barang tidak ditemukan!');
+            }
+        });
                             } else {
                                 // Jika QR Code tidak terdeteksi, teruskan untuk scan
                                 requestAnimationFrame(scanQRCode);

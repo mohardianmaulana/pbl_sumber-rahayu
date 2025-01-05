@@ -91,36 +91,93 @@ class PenjualanController extends Controller
     }
 
     public function tambahSesi(Request $request)
-    {
-        // Ambil data barang dari request
-        $barang = [
-            'id' => $request->id,
-            'nama' => $request->nama,
-            'harga' => $request->harga,
-        ];
+{
+    // Ambil barang dari sesi
+    $barangPenjualan = Session::get('penjualan_barang', []);
 
-        // Ambil barang yang sudah ada di sesi
-        $data = Session::get('penjualan_barang', []);
-
-        // Cek apakah barang sudah ada di sesi berdasarkan id
-        if (isset($data[$request->id])) {
-            // Jika sudah ada, kembalikan respons dengan status error
+    // Jika barang sudah ada di sesi
+    if (isset($barangPenjualan[$request->id])) {
+        // Cek sumber permintaan (modal atau scan QR)
+        if ($request->input('source') === 'modal') {
+            // Jika berasal dari modal, kembalikan pesan error
             return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
         }
 
-        // Jika belum ada, tambahkan barang baru ke sesi
-        $data[$request->id] = $barang;
+        // Tambahkan atau perbarui barang di sesi
+        if (!isset($barangPenjualan[$request->id])) {
+            $barangPenjualan[$request->id] = [
+                'nama' => $request->nama,
+                'harga' => $request->harga,
+                'jumlah' => $request->jumlah, // Set nilai jumlah langsung dari request
+            ];
+        } else {
+            $barangPenjualan[$request->id]['jumlah'] += $request->jumlah; // Tambahkan jumlah
+        }
+        // // Jika berasal dari scan QR, tambahkan jumlah barang
+        // if (!isset($barangPenjualan[$request->id]['jumlah'])) {
+        //     $barangPenjualan[$request->id]['jumlah'] = 1; // Default jumlah jika belum ada
+        // }
+        // $barangPenjualan[$request->id]['jumlah'] += 1; // Tambahkan jumlah
 
         // Simpan kembali barang ke sesi
-        Session::put('penjualan_barang', $data);
+        Session::put('penjualan_barang', $barangPenjualan);
 
-        // // Simpan data ke sesi
-        // $data = Session::get('penjualan_barang', []); // Ambil data sesi jika ada
-        // $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
-        // Session::put('penjualan_barang', $data); // Simpan kembali ke sesi
-
-        return response()->json(['message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $data]);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Jumlah barang berhasil ditambahkan!',
+            'data' => $barangPenjualan,
+        ]);
     }
+
+    // Jika barang belum ada di sesi, tambahkan sebagai barang baru
+    $barangPenjualan[$request->id] = [
+        'id' => $request->id,
+        'nama' => $request->nama,
+        'harga' => $request->harga,
+        'jumlah' => 1, // Inisialisasi jumlah
+    ];
+
+    // Simpan kembali barang ke sesi
+    Session::put('penjualan_barang', $barangPenjualan);
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Barang berhasil ditambahkan ke sesi!',
+        'data' => $barangPenjualan,
+    ]);
+}
+
+    // public function tambahSesi(Request $request)
+    // {
+    //     // Ambil data barang dari request
+    //     $barangSesi = [
+    //         'id' => $request->id,
+    //         'nama' => $request->nama,
+    //         'harga' => $request->harga,
+    //     ];
+
+    //     // Ambil barang yang sudah ada di sesi
+    //     $data = Session::get('penjualan_barang', []);
+
+    //     // Cek apakah barang sudah ada di sesi berdasarkan id
+    //     if (isset($data[$request->id])) {
+    //         // Jika sudah ada, kembalikan respons dengan status error
+    //         return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+    //     }
+
+    //     // Jika belum ada, tambahkan barang baru ke sesi
+    //     $data[$request->id] = $barangSesi;
+
+    //     // Simpan kembali barang ke sesi
+    //     Session::put('penjualan_barang', $data);
+
+    //     // // Simpan data ke sesi
+    //     // $data = Session::get('penjualan_barang', []); // Ambil data sesi jika ada
+    //     // $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
+    //     // Session::put('penjualan_barang', $data); // Simpan kembali ke sesi
+
+    //     return response()->json(['message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $data]);
+    // }
 
     public function hapusSesi(Request $request)
     {
@@ -171,19 +228,45 @@ class PenjualanController extends Controller
     
     public function editTambahSesi(Request $request)
     {
-        // Ambil data barang dari request
-        $barang = [
-            'id' => $request->id,
-            'nama' => $request->nama,
-            'harga' => $request->harga,
-        ];
-        
-        // Simpan data ke sesi
-        $data = Session::get('edit_penjualan_barang', []); // Ambil data sesi jika ada
-        $data[$request->id] = $barang; // Tambahkan atau update data barang berdasarkan ID
-        Session::put('edit_penjualan_barang', $data); // Simpan kembali ke sesi
-        
-        return response()->json(['message' => 'Barang berhasil ditambahkan ke sesi', 'data' => $data]);
+        // Ambil barang dari sesi
+    $barangEditPenjualan = Session::get('edit_penjualan_barang', []);
+
+    // Jika barang sudah ada di sesi
+    if (isset($barangEditPenjualan[$request->id])) {
+        // Cek sumber permintaan (modal atau scan QR)
+        if ($request->input('source') === 'modal') {
+            return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+        }
+
+        // Perbarui jumlah barang
+        $barangEditPenjualan[$request->id]['jumlah'] += $request->jumlah;
+
+        // Simpan kembali barang ke sesi
+        Session::put('edit_penjualan_barang', $barangEditPenjualan);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Jumlah barang berhasil ditambahkan!',
+            'data' => $barangEditPenjualan,
+        ]);
+    }
+
+    // Jika barang belum ada di sesi, tambahkan sebagai barang baru
+    $barangEditPenjualan[$request->id] = [
+        'id' => $request->id,
+        'nama' => $request->nama,
+        'harga' => $request->harga,
+        'jumlah' => $request->jumlah, // Inisialisasi jumlah dari request
+    ];
+
+    // Simpan kembali barang ke sesi
+    Session::put('edit_penjualan_barang', $barangEditPenjualan);
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Barang berhasil ditambahkan ke sesi!',
+        'data' => $barangEditPenjualan,
+    ]);
     }
     
     public function editHapusSesi(Request $request)
