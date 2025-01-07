@@ -224,8 +224,8 @@ function jalankanTambahSesi() {
     }
 }
 
-            // hitungTotal();
-            // hitungKembali();
+            hitungTotal();
+            hitungKembali();
             if (sessionStorage.getItem('reloadAndCalculate') === 'true') {
                 // Panggil fungsi hitungTotal untuk menghitung total harga setelah reload
                 hitungTotal();

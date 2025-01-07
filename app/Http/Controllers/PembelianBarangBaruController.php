@@ -172,17 +172,6 @@ class PembelianBarangBaruController extends Controller
         $barang->jumlah = $jumlah;  // Menggunakan jumlah input asli
         $barang->save();
 
-        // Periksa dan perbarui harga_barang
-        $hargaBarang = HargaBarang::where('barang_id', $barang->id)
-            ->where('supplier_id', $request->supplier_id)
-            ->whereNull('tanggal_selesai')
-            ->first();
-
-        if ($hargaBarang) {
-            if ($hargaBarang->harga_beli != $harga_beli) {
-                $hargaBarang->tanggal_selesai = now();
-                $hargaBarang->save();
-
                 // Buat baris baru dengan harga dan supplier baru
                 HargaBarang::create([
                     'barang_id' => $barang->id,
@@ -192,17 +181,6 @@ class PembelianBarangBaruController extends Controller
                     'tanggal_mulai' => now(),
                     'tanggal_selesai' => null,
                 ]);
-            }
-        } else {
-            HargaBarang::create([
-                'barang_id' => $barang->id,
-                'harga_beli' => $harga_beli,
-                'harga_jual' => $request->harga_jual,
-                'supplier_id' => $request->supplier_id,
-                'tanggal_mulai' => now(),
-                'tanggal_selesai' => null,
-            ]);
-        }
 
         return redirect()->to('pembelian')->with('success', 'Produk berhasil ditambahkan');
     }

@@ -63,7 +63,6 @@ class BarangController extends Controller
         return view('barang.index', compact('barang', 'kategori', 'rataRataHargaBeli'));
     }
 
-
     public function arsip(Request $request)
     {
         // Memanggil method di model Barang untuk mendapatkan data barang

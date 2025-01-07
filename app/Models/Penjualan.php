@@ -256,7 +256,7 @@ class Penjualan extends Model
         ];
     }
 
-    public static function updatePenjualan($data, $request, $id)
+        public static function updatePenjualan($request, $id)
     {
         // Validasi data request
         $validator = Validator::make($request->all(), [
@@ -307,14 +307,14 @@ class Penjualan extends Model
         $totalHarga = 0;
         $totalItem = 0;
 
-        foreach ($data['harga_jual'] as $index => $harga) {
-            $jumlah = $data['jumlah'][$index];
+        foreach ($request->harga_jual as $index => $harga) {
+            $jumlah = $request->jumlah[$index];
             $totalHarga += $harga * $jumlah;
             $totalItem += $jumlah;
         }
 
         // Hitung kembali nilai bayar dan kembali
-        $bayar = $data['bayar'];
+        $bayar = $request->bayar;
         $kembali = $bayar - $totalHarga;
 
         // Update data penjualan
@@ -328,9 +328,9 @@ class Penjualan extends Model
         ]);
 
         // Sinkronisasi data ke tabel pivot barang_penjualan
-        foreach ($data['barang_id'] as $index => $barang_id) {
-            $harga = $data['harga_jual'][$index];
-            $jumlah = $data['jumlah'][$index];
+        foreach ($request->barang_id as $index => $barang_id) {
+            $harga = $request->harga_jual[$index];
+            $jumlah = $request->jumlah[$index];
 
             // Ambil data lama dari tabel pivot barang_penjualan
             $pivotData = DB::table('barang_penjualan')
@@ -382,4 +382,5 @@ class Penjualan extends Model
             'message' => 'Penjualan berhasil diperbarui.',
         ];
     }
+
 }

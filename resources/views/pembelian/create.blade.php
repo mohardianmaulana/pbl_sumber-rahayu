@@ -50,7 +50,7 @@
                         </div>
                         @endif
 
-                        <form method="POST" action="{{ url('pembelian') }}" id="pembelianForm">
+                        <form method="POST" action="{{ route('pembelian.store') }}" id="pembelianForm">
                             @csrf
                             <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
                             <div class="d-flex justify-content-between align-items-center mb-3">

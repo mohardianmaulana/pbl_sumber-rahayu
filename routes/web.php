@@ -102,7 +102,7 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::post('/cek-qr', [PembelianController::class, 'cekQR'])->name('cek-qr');
     Route::post('/pembelian/tambah-sesi', [PembelianController::class, 'tambahSesi'])->name('pembelian.tambahSesi');
     Route::post('/pembelian/hapus-sesi', [PembelianController::class, 'hapusSesi'])->name('pembelian.hapusSesi');
-    Route::post('/pembelian', [PembelianController::class, 'store'])->name('store')->middleware('can:crud');
+    Route::post('/pembelian', [PembelianController::class, 'store'])->name('pembelian.store')->middleware('can:crud');
     Route::get('/pembelian/{Pembelian}/edit', [PembelianController::class, 'edit'])->name('edit')->middleware('can:crud');
     Route::post('/pembelian/edit-tambah-sesi', [PembelianController::class, 'editTambahSesi'])->name('pembelian.editTambahSesi');
     Route::post('/pembelian/edit-hapus-sesi', [PembelianController::class, 'editHapusSesi'])->name('pembelian.editHapusSesi');

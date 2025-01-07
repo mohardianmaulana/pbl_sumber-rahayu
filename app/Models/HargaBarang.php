@@ -24,7 +24,7 @@ class HargaBarang extends Model
         $hargaBarang = HargaBarang::leftJoin('barang', 'harga_barang.barang_id', '=', 'barang.id')
         ->leftJoin('supplier', 'harga_barang.supplier_id', '=', 'supplier.id')
         ->select('harga_barang.*', 'barang.nama as nama_barang', 'supplier.nama as nama_supplier')
-        ->orderBy('harga_barang.tanggal_mulai', 'asc')
+        ->orderBy('harga_barang.created_at', 'desc')
         ->get();
 
         // Menambahkan flag 'isComplete' untuk setiap item

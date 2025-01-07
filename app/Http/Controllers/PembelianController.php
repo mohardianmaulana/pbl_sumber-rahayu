@@ -248,9 +248,12 @@ public function editHapusSesi(Request $request)
                 ->value('jumlah_itemporary');
 
             if ($jumlahPivot !== null) {
-                // Hapus barang dari tabel pivot
-                $deleted = DB::table('barang_pembelian')->where('barang_id', $barangId)->delete();
-
+                // Hapus barang dari tabel pivot dengan status 0
+                $deleted = DB::table('barang_pembelian')
+                    ->where('barang_id', $barangId)
+                    ->where('status', 0)  // Menambahkan kondisi status = 0
+                    ->delete();
+                    
                 if ($deleted) {
                     // Kurangi jumlah barang di tabel barang
                     DB::table('barang')

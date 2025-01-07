@@ -142,42 +142,60 @@ class KategoriController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $request->validate([
-            'nama_kategori' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
-            'gambar_kategori' => 'image|file|mimes:jpg,png|min:1|max:2048', // Validasi gambar
-        ], [
-            'nama_kategori.required' => 'Nama Kategori wajib diisi',
-            'nama_kategori.regex' => 'Nama Kategori hanya boleh mengandung huruf dan spasi',
-            'nama_kategori.min' => 'Nama Kategori harus memiliki minimal 3 karakter',
-            'nama_kategori.max' => 'Nama Kategori tidak boleh lebih dari 50 karakter',
+{
+    // Validasi input
+    $request->validate([
+        'nama_kategori' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
+        'gambar_kategori' => 'nullable|image|file|mimes:jpg,png|min:1|max:2048', // Validasi gambar
+    ], [
+        'nama_kategori.required' => 'Nama Kategori wajib diisi',
+        'nama_kategori.regex' => 'Nama Kategori hanya boleh mengandung huruf dan spasi',
+        'nama_kategori.min' => 'Nama Kategori harus memiliki minimal 3 karakter',
+        'nama_kategori.max' => 'Nama Kategori tidak boleh lebih dari 50 karakter',
 
-            'gambar_kategori.required' => 'Gambar Kategori wajib diisi',
-            'gambar_kategori.image' => 'Gambar Kategori harus berupa gambar',
-            'gambar_kategori.mimes' => 'Gambar Kategori hanya boleh memiliki format jpg atau png',
-            'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 1 KB',
-            'gambar_kategori.max' => 'Ukuran Gambar Kategori tidak boleh lebih dari 2048 KB',
-        ]);
+        'gambar_kategori.required' => 'Gambar Kategori wajib diisi',
+        'gambar_kategori.image' => 'Gambar Kategori harus berupa gambar',
+        'gambar_kategori.mimes' => 'Gambar Kategori hanya boleh memiliki format jpg atau png',
+        'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 1 KB',
+        'gambar_kategori.max' => 'Ukuran Gambar Kategori tidak boleh lebih dari 2048 KB',
+    ]);
 
-        $namaFile = null;
-        if ($request->hasFile('gambar_kategori')) {
-            $nm = $request->gambar_kategori;
-            $namaFile = $nm->getClientOriginalName();
+    // Mengambil kategori berdasarkan ID
+    $kategori = Kategori::find($id);
 
-            $nm->move(public_path() . '/img', $namaFile);
+    // Jika ada gambar kategori yang lama dan gambar baru diupload, hapus gambar lama
+    if ($request->hasFile('gambar_kategori') && $kategori->gambar_kategori) {
+        $oldImagePath = public_path('img/' . $kategori->gambar_kategori);
+
+        // Hapus gambar lama jika ada
+        if (file_exists($oldImagePath)) {
+            unlink($oldImagePath);
         }
-
-        // Siapkan data kategori yang ingin diupdate
-        $data = [
-            'nama_kategori' => $request->nama_kategori,
-            'gambar_kategori' => $namaFile,
-        ];
-
-        // Panggil method `updateKategori` dari model Kategori
-        Kategori::updateKategori($id, $data);
-
-        return redirect()->to('kategori')->with('success', 'Berhasil melakukan update data kategori');
     }
+
+    // Jika tidak ada gambar yang diupload, gunakan gambar yang lama
+    $namaFile = $kategori->gambar_kategori; 
+
+    if ($request->hasFile('gambar_kategori')) {
+        $nm = $request->gambar_kategori;
+        $namaFile = $nm->getClientOriginalName();
+
+        // Memindahkan file gambar yang baru
+        $nm->move(public_path() . '/img', $namaFile);
+    }
+
+    // Siapkan data kategori yang ingin diupdate
+    $data = [
+        'nama_kategori' => $request->nama_kategori,
+        'gambar_kategori' => $namaFile,
+    ];
+
+    // Panggil method `updateKategori` dari model Kategori
+    Kategori::updateKategori($id, $data);
+
+    return redirect()->to('kategori')->with('success', 'Berhasil melakukan update data kategori');
+}
+
     //     public function destroy($id)
     // {
     //     // ID kategori sementara/temporary

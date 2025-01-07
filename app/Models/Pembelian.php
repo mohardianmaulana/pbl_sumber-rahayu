@@ -159,19 +159,19 @@ class Pembelian extends Model
             // Periksa dan perbarui harga_barang
             $barang = Barang::find($barang_id);
             $hargaBarang = HargaBarang::where('barang_id', $barang->id)
-                ->where('supplier_id', $data['supplier_id'])
+                ->where('supplier_id', $pembelian->supplier_id)
                 ->whereNull('tanggal_selesai')
                 ->first();
 
             if ($hargaBarang) {
-                if ($hargaBarang->harga_beli != $harga) {
+                if ($hargaBarang->harga_beli != $data['harga_beli'][$index]) {
                     $hargaBarang->tanggal_selesai = now();
                     $hargaBarang->save();
 
                     // Buat baris baru dengan harga dan supplier baru
                     HargaBarang::create([
                         'barang_id' => $barang->id,
-                        'harga_beli' => $harga,
+                        'harga_beli' => $data['harga_beli'][$index],
                         'harga_jual' => null,
                         'supplier_id' => $pembelian->supplier_id,
                         'tanggal_mulai' => now(),
@@ -181,7 +181,7 @@ class Pembelian extends Model
             } else {
                 HargaBarang::create([
                     'barang_id' => $barang->id,
-                    'harga_beli' => $harga,
+                    'harga_beli' => $data['harga_beli'][$index],
                     'harga_jual' => null,
                     'supplier_id' => $pembelian->supplier_id,
                     'tanggal_mulai' => now(),
@@ -400,13 +400,13 @@ class Pembelian extends Model
                 ->first();
 
             if ($hargaBarang) {
-                if ($hargaBarang->harga_beli != $harga) {
+                if ($hargaBarang->harga_beli != $data['harga_beli'][$index]) {
                     $hargaBarang->tanggal_selesai = now();
                     $hargaBarang->save();
 
                     HargaBarang::create([
                         'barang_id' => $barang->id,
-                        'harga_beli' => $harga,
+                        'harga_beli' => $data['harga_beli'][$index],
                         'harga_jual' => null,
                         'supplier_id' => $pembelian->supplier_id,
                         'tanggal_mulai' => now(),
@@ -416,7 +416,7 @@ class Pembelian extends Model
             } else {
                 HargaBarang::create([
                     'barang_id' => $barang->id,
-                    'harga_beli' => $harga,
+                    'harga_beli' => $data['harga_beli'][$index],
                     'harga_jual' => null,
                     'supplier_id' => $pembelian->supplier_id,
                     'tanggal_mulai' => now(),

@@ -15,6 +15,22 @@ class HargaBarangController extends Controller
         return view('hargaBarang.index', compact('hargaBarang'));
     }
 
+    // public function __construct()
+    // {
+    //     // Hitung jumlah harga_barang yang tanggal_selesai-nya NULL
+    //     $jumlahHargaBarangAktif = HargaBarang::whereNull('tanggal_selesai')->count();
+
+    //     // Bagikan data ini ke semua view
+    //     view()->share('jumlahHargaBarangAktif', $jumlahHargaBarangAktif);
+    // }
+
+    // public function showSidebarData()
+    // {
+    //     // Menampilkan data ke view yang diperlukan
+    //     return view('template.sidebar');
+    // }
+
+
 
     public function edit($id)
     {
