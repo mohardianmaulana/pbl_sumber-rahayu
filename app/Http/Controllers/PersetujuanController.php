@@ -4,12 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Persetujuan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 class PersetujuanController extends Controller
 {
     public function verify(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'kode' => 'required|string|regex:/^[0-9\s]+$/|min:3|max:10',
+            'user_id' => 'numeric|min:1|max:999999', // Validasi gambar
+        ], [
+            'kode.required' => 'Kode wajib diisi',
+            'kode.regex' => 'Kode hanya boleh berisi angka dan spasi',
+            'kode.min' => 'Kode harus memiliki minimal 3 karakter',
+            'kode.max' => 'Kode tidak boleh lebih dari 10 karakter',
+
+            'user_id.required' => 'User ID wajib diisi',
+            'user_id.numeric' => 'User ID harus berupa angka',
+            'user_id.min' => 'User ID tidak boleh kurang dari 1',
+            'user_id.max' => 'User ID tidak boleh lebih dari 999999',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         $kode = $request->input('kode');
         $userId = Auth::id();
     

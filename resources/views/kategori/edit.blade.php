@@ -36,15 +36,6 @@
                 <div class="container-fluid">
                     <h1 class="h3 mb-4 text-gray-800">Edit Kategori</h1>
                     <div class="my-3 p-3 bg-body shadow-sm" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
-                        @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
                         @if (session('success'))
                         <div class="alert alert-success">
                             {{ session('success') }}

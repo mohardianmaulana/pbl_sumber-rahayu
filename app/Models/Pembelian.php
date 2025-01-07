@@ -56,12 +56,12 @@ class Pembelian extends Model
     // Menampilkan pembelian yang baru dalam 1 bulan
     public static function tampil()
     {
-        $satuBulanLalu = Carbon::now()->subMonth();
+        $today = Carbon::today();
 
         $pembelian = Pembelian::join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
             ->join('user', 'pembelian.user_id', '=', 'user.id')
             ->select('pembelian.*', 'supplier.nama as supplier_nama', 'user.name as user_nama')
-            ->whereDate('pembelian.created_at', '>=', $satuBulanLalu)
+            ->whereDate('pembelian.created_at', '>=', $today)
             ->orderBy('pembelian.created_at', 'desc')
             ->get();
 
@@ -71,29 +71,17 @@ class Pembelian extends Model
     // Menampilkan pembelian yang sudah lebih dari 1 bulan
     public static function tampilLama()
     {
-        $satuBulanLalu = Carbon::now()->subMonth();
+        $today = Carbon::today();
 
         $pembelian = Pembelian::join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
             ->join('user', 'pembelian.user_id', '=', 'user.id')
             ->select('pembelian.*', 'supplier.nama as supplier_nama', 'user.name as user_nama')
-            ->whereDate('pembelian.created_at', '<=', $satuBulanLalu)
+            ->whereDate('pembelian.created_at', '<=', $today)
             ->orderBy('pembelian.created_at', 'desc')
             ->get();
 
         return $pembelian;
     }
-
-    // // Method untuk mengambil data supplier dan kategori yang aktif
-    // public static function tambahBaru()
-    // {
-    //     $supplier = Supplier::where('status', 1)->get();
-    //     $kategori = Kategori::where('status', 1)->get();
-
-    //     return [
-    //         'supplier' => $supplier,
-    //         'kategori' => $kategori,
-    //     ];
-    // }
 
     // Menyiapkan data untuk pembuatan pembelian
     public static function buat($supplier_id)
@@ -130,128 +118,6 @@ class Pembelian extends Model
             'supplier' => $supplier
         ];
     }
-
-    // // Method untuk menyimpan barang dan pembelian
-    // public static function storeBarang($request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'nama' => 'required',
-    //         'jumlah' => 'required|numeric|min:0',
-    //         'harga_beli' => 'required|numeric|min:1',
-    //         'harga_jual' => 'required|numeric|min:1',
-    //         'minLimit' => 'required|numeric|min:1',
-    //         'maxLimit' => [
-    //             'required', 
-    //             'numeric',
-    //             'min:1',
-    //             function ($attribute, $value, $fail) use ($request) {
-    //                 if ($value < $request->minLimit) {
-    //                     $fail('Max Limit tidak boleh lebih kecil daripada Min Limit');
-    //                 }
-    //             }
-    //         ],
-    //         'kategori_id' => 'required',
-    //         'supplier_id' => 'required'
-    //     ], [
-    //         'nama.required' => 'Nama Barang wajib diisi',
-    //         'jumlah.required' => 'Jumlah wajib diisi',
-    //         'jumlah.min' => 'Jumlah tidak boleh kurang dari 0',
-    //         'harga_beli.required' => 'Harga beli wajib diisi',
-    //         'harga_beli.min' => 'Harga beli tidak boleh kurang dari 0',
-    //         'harga_jual.required' => 'Harga jual wajib diisi',
-    //         'harga_jual.min' => 'Harga jual tidak boleh kurang dari 0',
-    //         'minLimit.required' => 'Min Limit wajib diisi',
-    //         'minLimit.min' => 'Min Limit tidak boleh kurang dari 0',
-    //         'maxLimit.required' => 'Max Limit wajib diisi',
-    //         'maxLimit.min' => 'Max Limit tidak boleh kurang dari 0',
-    //         'kategori_id.required' => 'Kategori wajib diisi',
-    //         'supplier_id.required' => 'Supplier wajib diisi',
-    //     ]);
-
-    //     // Jika validasi gagal
-    //     if ($validator->fails()) {
-    //         return [
-    //             'status' => 'error',
-    //             'errors' => $validator->errors()
-    //         ];
-    //     }
-
-    //     // Simpan barang
-    //     $barang = Barang::create([
-    //         'id_qr' => $request->id_qr,
-    //         'nama' => $request->nama,
-    //         'jumlah' => $request->jumlah,
-    //         'harga_jual' => $request->harga_jual,
-    //         'harga_beli' => $request->harga_beli,
-    //         'minLimit' => $request->minLimit,
-    //         'maxLimit' => $request->maxLimit,
-    //         'kategori_id' => $request->kategori_id,
-    //         'status' => 1,
-    //     ]);
-
-    //     // Hitung total harga
-    //     $harga_beli = $request->harga_beli;
-    //     $jumlah = $request->jumlah;
-    //     $totalHarga = $harga_beli * $jumlah;
-
-    //     // Simpan ke tabel pembelian
-    //     $pembelian = Pembelian::create([
-    //         'supplier_id' => $request->supplier_id,
-    //         'total_item' => $jumlah,
-    //         'total_harga' => $totalHarga,
-    //         'tanggal_transaksi' => now(),
-    //         'user_id' => Auth::id(),
-    //     ]);
-
-    //     // Simpan ke tabel pivot barang_pembelian
-    //     $pembelian->barangs()->attach($barang->id, [
-    //         'jumlah' => $jumlah, 
-    //         'harga' => $harga_beli, 
-    //         'jumlah_itemporary' => $jumlah, 
-    //     ]);
-
-    //     // Perbarui stok barang
-    //     $barang->jumlah = $jumlah;
-    //     $barang->save();
-
-    //     // Periksa dan perbarui harga_barang jika perlu
-    //     $hargaBarang = HargaBarang::where('barang_id', $barang->id)
-    //         ->where('supplier_id', $request->supplier_id)
-    //         ->whereNull('tanggal_selesai')
-    //         ->first();
-
-    //     if ($hargaBarang) {
-    //         if ($hargaBarang->harga_beli != $harga_beli) {
-    //             $hargaBarang->tanggal_selesai = now();
-    //             $hargaBarang->save();
-
-    //             HargaBarang::create([
-    //                 'barang_id' => $barang->id,
-    //                 'harga_beli' => $harga_beli,
-    //                 'harga_jual' => $request->harga_jual,
-    //                 'supplier_id' => $request->supplier_id,
-    //                 'tanggal_mulai' => now(),
-    //                 'tanggal_selesai' => null,
-    //             ]);
-    //         }
-    //     } else {
-    //         HargaBarang::create([
-    //             'barang_id' => $barang->id,
-    //             'harga_beli' => $harga_beli,
-    //             'harga_jual' => $request->harga_jual,
-    //             'supplier_id' => $request->supplier_id,
-    //             'tanggal_mulai' => now(),
-    //             'tanggal_selesai' => null,
-    //         ]);
-    //     }
-
-    //     return [
-    //         'status' => 'success',
-    //         'message' => 'Produk berhasil ditambahkan'
-    //     ];
-    // }
-
-
 
     // Method untuk menambah pembelian baru
     public static function tambahPembelian($data)
@@ -376,69 +242,71 @@ class Pembelian extends Model
     //     ];
     // }
     public static function ganti($id)
-    {
-        $pembelian = Pembelian::with(['barangs', 'supplier', 'user'])->find($id);
+{
+    $pembelian = Pembelian::with(['barangs', 'supplier', 'user'])->find($id);
 
-        $dataBarang = Session()->get('edit_pembelian_barang', []); // Ambil data barang dari sesi
+    $dataBarang = Session()->get('edit_pembelian_barang', []); // Ambil data barang dari sesi
 
-        Log::info('Isi sesi edit_pembelian_barang:', $dataBarang);
+    Log::info('Isi sesi edit_pembelian_barang:', $dataBarang);
 
-        if (!$pembelian) {
-            return null;  // Jika pembelian tidak ditemukan
-        }
+    if (!$pembelian) {
+        return null; // Jika pembelian tidak ditemukan
+    }
 
-        $tanggalTransaksi = Carbon::parse($pembelian->tanggal_transaksi);
-        $satuBulanLalu = Carbon::now()->subMonth();
+    $tanggalTransaksi = Carbon::parse($pembelian->tanggal_transaksi);
+    $satuBulanLalu = Carbon::now()->subMonth();
 
-        // Periksa apakah pembelian lebih dari satu bulan
-        if ($tanggalTransaksi->lt($satuBulanLalu)) {
-            return ['error' => 'Penjualan lebih dari satu bulan tidak dapat diedit.'];
-        }
+    // Periksa apakah pembelian lebih dari satu bulan
+    if ($tanggalTransaksi->lt($satuBulanLalu)) {
+        return ['error' => 'Penjualan lebih dari satu bulan tidak dapat diedit.'];
+    }
 
-        // Ambil harga beli rata-rata untuk semua barang
-        $avgHargaBeli = DB::table('harga_barang')
-            ->select('barang_id', DB::raw('ROUND(AVG(harga_beli)) as rata_rata_harga_beli'))
-            ->whereNull('tanggal_selesai')
-            ->groupBy('barang_id')
-            ->get();
+    // Ambil harga beli rata-rata untuk semua barang
+    $avgHargaBeli = DB::table('harga_barang')
+        ->select('barang_id', DB::raw('ROUND(AVG(harga_beli)) as rata_rata_harga_beli'))
+        ->whereNull('tanggal_selesai')
+        ->groupBy('barang_id')
+        ->get();
 
-        $rataRataHargaBeli = [];
-        foreach ($avgHargaBeli as $avg) {
-            $rataRataHargaBeli[$avg->barang_id] = $avg->rata_rata_harga_beli;
-        }
+    $rataRataHargaBeli = [];
+    foreach ($avgHargaBeli as $avg) {
+        $rataRataHargaBeli[$avg->barang_id] = $avg->rata_rata_harga_beli;
+    }
 
-        // Ambil semua barang yang tidak memiliki QR code dan join dengan tabel harga_barang
-        $barangs = Barang::leftJoin('harga_barang', 'barang.id', '=', 'harga_barang.barang_id')
-            ->select(
-                'barang.*',
-                'harga_barang.harga_beli',
-                'harga_barang.harga_jual'
-            )
-            ->whereNull('barang.id_qr')
-            ->whereNull('harga_barang.tanggal_selesai') // Hanya ambil harga yang belum selesai
-            ->get();
+    // Ambil semua barang yang tidak memiliki QR code dan join dengan tabel harga_barang
+    $barangs = Barang::leftJoin('harga_barang', 'barang.id', '=', 'harga_barang.barang_id')
+        ->select(
+            'barang.*',
+            'harga_barang.harga_beli',
+            'harga_barang.harga_jual'
+        )
+        ->whereNull('barang.id_qr')
+        ->whereNull('harga_barang.tanggal_selesai') // Hanya ambil harga yang belum selesai
+        ->get();
 
-        // Gabungkan data pivot dan sesi
-        $dataPivot = $pembelian->barangs->map(function ($barang) {
+    // Gabungkan data hanya jika sesi kosong, jika tidak hanya gunakan data sesi
+    $dataFinal = empty($dataBarang)
+        ? $pembelian->barangs->map(function ($barang) {
             return [
                 'id' => $barang->id,
                 'nama' => $barang->nama,
                 'harga' => $barang->pivot->harga, // Data dari pivot
                 'jumlah' => $barang->pivot->jumlah, // Data jumlah dari pivot
             ];
-        })->toArray(); // Ambil data pivot barang
-        $dataFinal = array_merge($dataPivot, $dataBarang);
+        })->toArray()
+        : $dataBarang;
 
-        // Kembalikan semua data yang dibutuhkan untuk tampilan edit
-        return [
-            'pembelian' => $pembelian,
-            'dataBarang' => $dataBarang,
-            'dataFinal' => $dataFinal,
-            'rataRataHargaBeli' => $rataRataHargaBeli,
-            'barangs' => $barangs,
-            'tanggal_transaksi' => $pembelian->tanggal_transaksi->format('d-m-Y'),
-        ];
-    }
+    // Kembalikan semua data yang dibutuhkan untuk tampilan edit
+    return [
+        'pembelian' => $pembelian,
+        'dataBarang' => $dataBarang,
+        'dataFinal' => $dataFinal,
+        'rataRataHargaBeli' => $rataRataHargaBeli,
+        'barangs' => $barangs,
+        'tanggal_transaksi' => $pembelian->tanggal_transaksi->format('d-m-Y'),
+    ];
+}
+
 
 
     public static function gantiPembelian($data, $id)

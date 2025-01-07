@@ -57,11 +57,19 @@ class KategoriController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama_kategori' => 'required',
+            'nama_kategori' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
             'gambar_kategori' => 'image|file|mimes:jpg,png|min:1|max:2048', // Validasi gambar
         ], [
             'nama_kategori.required' => 'Nama Kategori wajib diisi',
+            'nama_kategori.regex' => 'Nama Kategori hanya boleh mengandung huruf dan spasi',
+            'nama_kategori.min' => 'Nama Kategori harus memiliki minimal 3 karakter',
+            'nama_kategori.max' => 'Nama Kategori tidak boleh lebih dari 50 karakter',
+
             'gambar_kategori.required' => 'Gambar Kategori wajib diisi',
+            'gambar_kategori.image' => 'Gambar Kategori harus berupa gambar',
+            'gambar_kategori.mimes' => 'Gambar Kategori hanya boleh memiliki format jpg atau png',
+            'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 1 KB',
+            'gambar_kategori.max' => 'Ukuran Gambar Kategori tidak boleh lebih dari 2048 KB',
         ]);
 
         if ($validator->fails()) {
@@ -136,10 +144,19 @@ class KategoriController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_kategori' => 'required',
-            'gambar_kategori' => 'nullable|image|file|mimes:jpg,png|max:2048', // Validasi gambar
+            'nama_kategori' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
+            'gambar_kategori' => 'image|file|mimes:jpg,png|min:1|max:2048', // Validasi gambar
         ], [
-            'nama_kategori.required' => 'Nama barang Barang wajib diisi',
+            'nama_kategori.required' => 'Nama Kategori wajib diisi',
+            'nama_kategori.regex' => 'Nama Kategori hanya boleh mengandung huruf dan spasi',
+            'nama_kategori.min' => 'Nama Kategori harus memiliki minimal 3 karakter',
+            'nama_kategori.max' => 'Nama Kategori tidak boleh lebih dari 50 karakter',
+
+            'gambar_kategori.required' => 'Gambar Kategori wajib diisi',
+            'gambar_kategori.image' => 'Gambar Kategori harus berupa gambar',
+            'gambar_kategori.mimes' => 'Gambar Kategori hanya boleh memiliki format jpg atau png',
+            'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 1 KB',
+            'gambar_kategori.max' => 'Ukuran Gambar Kategori tidak boleh lebih dari 2048 KB',
         ]);
 
         $namaFile = null;

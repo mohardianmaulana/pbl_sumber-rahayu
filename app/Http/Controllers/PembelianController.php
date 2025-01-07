@@ -160,17 +160,22 @@ class PembelianController extends Controller
         $request->validate([
             'barang_id' => 'required|array|min:1',
             'barang_id.*' => 'required|exists:barang,id',
-            'harga_beli.*' => 'required|numeric|min:1',
-            'jumlah.*' => 'required|numeric|min:1',
+            'harga_beli.*' => 'required|numeric|min:1|max:999999999999999',
+            'jumlah.*' => 'required|numeric|min:1|max:99999999',
         ], [
             'barang_id.required' => 'Harus memilih setidaknya satu barang',
+            'barang_id.array' => 'Barang harus berupa array',
+            'barang_id.min' => 'Harus memilih setidaknya satu barang',
             'barang_id.*.required' => 'Barang tidak valid',
+            'barang_id.*.exists' => 'Barang yang dipilih tidak ada dalam database',
             'harga_beli.*.required' => 'Harga beli wajib diisi',
             'harga_beli.*.numeric' => 'Harga beli harus berupa angka',
             'harga_beli.*.min' => 'Harga beli tidak boleh kurang dari 1',
+            'harga_beli.*.max' => 'Harga beli tidak boleh lebih dari 999999999999999',
             'jumlah.*.required' => 'Jumlah wajib diisi',
             'jumlah.*.numeric' => 'Jumlah harus berupa angka',
             'jumlah.*.min' => 'Jumlah tidak boleh kurang dari 1',
+            'jumlah.*.max' => 'Jumlah tidak boleh lebih dari 99999999',
         ]);
 
         // Panggil method storePembelian dari model untuk menangani proses penyimpanan
@@ -223,15 +228,78 @@ class PembelianController extends Controller
 }
 
 
-    public function editHapusSesi(Request $request)
-    {
+public function editHapusSesi(Request $request)
+{
+    try {
+        // Validasi ID barang
+        $request->validate([
+            'id' => 'required|numeric',
+        ]);
 
-        $data = Session::get('edit_pembelian_barang', []);
-        unset($data[$request->id]); // Hapus barang berdasarkan ID
-        Session::put('edit_pembelian_barang', $data); // Update sesi
+        $barangId = $request->id;
 
-        return response()->json(['message' => 'Barang berhasil dihapus dari sesi']);
+        // Periksa apakah barang ada di tabel pivot
+        $existsInDatabase = DB::table('barang_pembelian')->where('barang_id', $barangId)->exists();
+
+        if ($existsInDatabase) {
+            // Ambil jumlah barang dari tabel pivot
+            $jumlahPivot = DB::table('barang_pembelian')
+                ->where('barang_id', $barangId)
+                ->value('jumlah_itemporary');
+
+            if ($jumlahPivot !== null) {
+                // Hapus barang dari tabel pivot
+                $deleted = DB::table('barang_pembelian')->where('barang_id', $barangId)->delete();
+
+                if ($deleted) {
+                    // Kurangi jumlah barang di tabel barang
+                    DB::table('barang')
+                        ->where('id', $barangId)
+                        ->decrement('jumlah', $jumlahPivot);
+
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Barang berhasil dihapus dari database, dan jumlah barang diperbarui.',
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Gagal menghapus barang dari database.',
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Jumlah barang di tabel pivot tidak ditemukan.',
+                ], 500);
+            }
+        } else {
+            // Barang tidak ada di database, hapus dari sesi
+            $data = Session::get('edit_pembelian_barang', []);
+            if (isset($data[$barangId])) {
+                unset($data[$barangId]); // Hapus barang berdasarkan ID
+                Session::put('edit_pembelian_barang', $data); // Update sesi
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Barang berhasil dihapus dari sesi.',
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Barang tidak ditemukan di sesi atau database.',
+            ], 404);
+        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal menghapus barang: ' . $e->getMessage(),
+        ], 500);
     }
+}
+
+
 
     public function hapusSemuaSesi()
     {
@@ -248,11 +316,6 @@ class PembelianController extends Controller
         // Panggil method model untuk mengambil data yang diperlukan untuk mengedit pembelian
         $data = Pembelian::ganti($id);
 
-        // Cek apakah data berisi pesan error (misalnya jika pembelian terlalu lama untuk diedit)
-        if (isset($data['error'])) {
-            return redirect()->route('pembelian.lama')->with('error', $data['error']);
-        }
-
         // Jika data valid, kirim data ke view
         return view('pembelian.edit', $data);
     }
@@ -260,6 +323,28 @@ class PembelianController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Validasi data request
+        $request->validate([
+            'barang_id' => 'required|array|min:1',
+            'barang_id.*' => 'required|exists:barang,id',
+            'harga_beli.*' => 'required|numeric|min:1|max:999999999999999',
+            'jumlah.*' => 'required|numeric|min:1|max:99999999',
+        ], [
+            'barang_id.required' => 'Harus memilih setidaknya satu barang',
+            'barang_id.array' => 'Barang harus berupa array',
+            'barang_id.min' => 'Harus memilih setidaknya satu barang',
+            'barang_id.*.required' => 'Barang tidak valid',
+            'barang_id.*.exists' => 'Barang yang dipilih tidak ada dalam database',
+            'harga_beli.*.required' => 'Harga beli wajib diisi',
+            'harga_beli.*.numeric' => 'Harga beli harus berupa angka',
+            'harga_beli.*.min' => 'Harga beli tidak boleh kurang dari 1',
+            'harga_beli.*.max' => 'Harga beli tidak boleh lebih dari 999999999999999',
+            'jumlah.*.required' => 'Jumlah wajib diisi',
+            'jumlah.*.numeric' => 'Jumlah harus berupa angka',
+            'jumlah.*.min' => 'Jumlah tidak boleh kurang dari 1',
+            'jumlah.*.max' => 'Jumlah tidak boleh lebih dari 99999999',
+        ]);
+
         // Panggil method model untuk memperbarui pembelian
         $result = Pembelian::gantiPembelian($request->all(), $id);
 

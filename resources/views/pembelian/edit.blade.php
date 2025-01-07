@@ -98,7 +98,7 @@
                                     @foreach($dataFinal as $index => $barang)
                                     @if(is_array($barang)) <!-- Validasi tambahan -->
                                     <tr class="text-center" data-id="{{ $barang['id'] ?? '' }}">
-                                        <td class="col-md-1 text-center">{{ $index + 1 }}</td>
+                                        <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
                                         <td class="col-md-3 text-center">{{ $barang['nama'] ?? '-' }}</td>
                                         <td class="col-md-2 text-center">
                                             <input type="number" class="form-control harga-barang" name="harga_beli[]" value="{{ $barang['harga'] ?? '' }}" oninput="hitungTotal()">
@@ -160,35 +160,90 @@
     <script>
         
         $(document).ready(function() {
-    //         // Ambil semua data barang dari tabel
-    // $('#selectedBarangTable tbody tr').each(function() {
-    //     let row = $(this);
-    //     let barangId = row.data('id');
-    //     let nama = row.find('td:nth-child(2)').text().trim();
-    //     let harga = row.find('.harga-barang').val();
-    //     let jumlah = row.find('.jumlah-barang').val();
+            // Iterasi semua baris di tabel
+    $('#selectedBarangTable tbody tr').each(function () {
+        let row = $(this);
+        let barangId = row.data('id');
 
-    //     console.log({ barangId, nama, harga, jumlah }); // Debug data
+        // Ambil nilai jumlah dari sessionStorage berdasarkan barangId
+        let jumlah = sessionStorage.getItem('jumlah_' + barangId);
 
-    //     // Kirim data barang ke sesi menggunakan AJAX
-    //     $.ajax({
-    //         url: '/pembelian/edit-tambah-sesi',
-    //         method: 'POST',
-    //         data: {
-    //             id: barangId,
-    //             nama: nama,
-    //             harga: harga,
-    //             jumlah: jumlah,
-    //             source: 'qr',
-    //             _token: '{{ csrf_token() }}',
-    //         },
-    //         success: function(response) {
-    //             console.log(`${nama} berhasil ditambahkan ke sesi.`);
-    //         },
-    //         error: function(xhr) {
-    //             console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
-    //         },
-    //     });
+        // Jika nilai ditemukan, atur nilai input field jumlah
+        if (jumlah !== null) {
+            row.find('.jumlah-barang').val(jumlah);
+            console.log(`Jumlah barang dengan ID ${barangId} diatur ulang: ${jumlah}`); // Debug
+        }
+    });
+            // Fungsi untuk menambahkan barang ke sesi
+function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
+    $.ajax({
+        url: '/pembelian/edit-tambah-sesi',
+        method: 'POST',
+        data: {
+            id: barangId,
+            nama: nama,
+            harga: harga,
+            source: source,
+            _token: '{{ csrf_token() }}',
+        },
+        success: function(response) {
+            console.log(`${nama} berhasil ditambahkan ke sesi.`);
+        },
+        error: function(xhr) {
+            console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
+        },
+    });
+}
+            // Fungsi untuk menangani logika tambah-sesi
+function jalankanTambahSesi() {
+    if (!sessionStorage.getItem('isFirstReload')) {
+        // Tandai bahwa logika ini sudah dijalankan
+        sessionStorage.setItem('isFirstReload', 'true');
+
+        // Ambil semua data barang dari tabel
+        $('#selectedBarangTable tbody tr').each(function() {
+            let row = $(this);
+            let barangId = row.data('id');
+            let nama = row.find('td:nth-child(2)').text().trim();
+            let harga = row.find('.harga-barang').val();
+
+            console.log({ barangId, nama, harga }); // Debug data
+
+            // Kirim data barang ke sesi menggunakan AJAX
+            tambahBarangKeSesi(barangId, nama, harga);
+        });
+    }
+}
+
+    // // Event handler untuk tombol hapus
+    // $('#selectedBarangTable').on('click', '.deleteBarangBtn', function() {
+    //     let row = $(this).closest('tr');
+    //     let barangId = row.data('id'); // Ambil ID barang dari atribut data-id
+
+    //     console.log({ barangId }); // Debug data
+
+    //     // Konfirmasi penghapusan
+    //     if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+    //         // Kirim request AJAX untuk memeriksa dan menghapus data
+    //         $.ajax({
+    //             url: '/pembelian/edit-hapus-sesi', // Endpoint untuk logika penghapusan
+    //             method: 'DELETE',
+    //             data: {
+    //                 id: barangId,
+    //                 _token: '{{ csrf_token() }}', // Laravel CSRF token
+    //             },
+    //             success: function(response) {
+    //                 alert(response.message); // Tampilkan pesan sukses
+    //                 if (response.status === 'success') {
+    //                     row.remove(); // Hapus baris dari tabel jika berhasil
+    //                 }
+    //             },
+    //             error: function(xhr) {
+    //                 console.error('Gagal menghapus barang:', xhr.responseText);
+    //                 alert('Terjadi kesalahan saat menghapus barang.');
+    //             },
+    //         });
+    //     }
     // });
             if (sessionStorage.getItem('reloadAndCalculate') === 'true') {
                 // Panggil fungsi hitungTotal untuk menghitung total harga setelah reload
@@ -276,6 +331,19 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                 //     });
                 // }
             
+            // Fungsi untuk menyimpan nilai jumlah barang ke sessionStorage
+            function simpanJumlahKeSessionStorage() {
+                $('#selectedBarangTable tbody tr').each(function() {
+                    let row = $(this);
+                    let barangId = row.data('id');
+                    let jumlah = row.find('.jumlah-barang').val();
+
+                    // Simpan jumlah barang ke sessionStorage dengan key unik berdasarkan barangId
+                    sessionStorage.setItem('jumlah_' + barangId, jumlah);
+                    console.log(`Jumlah barang dengan ID ${barangId} disimpan: ${jumlah}`); // Debug
+                });
+            }
+
              // Ambil semua ID barang yang ada di tabel dan simpan dalam array barangIds
             var barangIds = [];
             $('#selectedBarangTable tbody tr').each(function() {
@@ -306,6 +374,18 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                         },
                         success: function(response) {
                             console.log(response.message);
+                            // Sebelum reload, tambahkan semua barang yang ada di tabel ke sesi
+                            $('#selectedBarangTable tbody tr').each(function() {
+                                let row = $(this);
+                                let barangId = row.data('id');
+                                let nama = row.find('td:nth-child(2)').text().trim();
+                                let harga = row.find('.harga-barang').val();
+
+                                console.log({ barangId, nama, harga }); // Debug data
+                                tambahBarangKeSesi(barangId, nama, harga); // Tambahkan ke sesi
+                            });
+                            // Sebelum reload, simpan nilai jumlah barang ke sessionStorage
+                            simpanJumlahKeSessionStorage();
                             // Tambahkan barang ke tabel atau sesi (mungkin perlu memuat ulang tabel)
                             sessionStorage.setItem('reload', 'true'); // Set flag reloadPage
                             location.reload(); // Reload halaman untuk menampilkan barang yang baru
@@ -403,37 +483,33 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                 hitungTotal();
             });
 
-            $(document).on('click', '.deleteBarangBtn', function() {
-                const barangId = $(this).data('id');
+            $('.deleteBarangBtn').on('click', function () {
+    const barangId = $(this).data('id');
+    if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+        $.ajax({
+            url: '/pembelian/edit-hapus-sesi',
+            method: 'POST',
+            data: {
+                id: barangId,
+                _token: '{{ csrf_token() }}',
+            },
+            success: function (response) {
+                alert(response.message);
+                $(`tr[data-id="${barangId}"]`).remove(); // Hapus baris dari tabel
+                updateNomorUrut(); // Perbarui nomor urut
+                hitungTotal(); // Perbarui total harga
 
-                    // Hapus data jumlah barang dari sessionStorage
-                    sessionStorage.removeItem('jumlah_' + barangId);
+                // Reload halaman setelah penghapusan berhasil
+                location.reload();
+            },
+            error: function (xhr) {
+                alert('Gagal menghapus barang: ' + xhr.responseText);
+                console.error(xhr.responseText);
+            },
+        });
+    }
+});
 
-                    // Hapus baris barang dari tabel
-                    $(this).closest('tr').remove();
-
-                    // Panggil fungsi hitungTotal untuk memperbarui total harga setelah barang dihapus
-                    hitungTotal();
-
-                // Hapus barang dari sesi melalui AJAX
-                $.ajax({
-                    url: '/pembelian/edit-hapus-sesi',
-                    method: 'POST',
-                    data: {
-                        id: barangId,
-                        _token: '{{ csrf_token() }}',
-                    },
-                    success: function(response) {
-                        console.log(response.message);
-                        $(`tr[data-id="${id}"]`).remove(); // Hapus baris dari tabel
-                        updateNomorUrut();
-                        hitungTotal(); // Update total harga
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                    },
-                });
-            });
 
 
             // Update nomor urut pada tabel
@@ -567,6 +643,40 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                             scanQRCode();
                         });
 
+                        // Fungsi untuk menambahkan barang ke sesi
+function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
+    $.ajax({
+        url: '/pembelian/edit-tambah-sesi',
+        method: 'POST',
+        data: {
+            id: barangId,
+            nama: nama,
+            harga: harga,
+            source: source,
+            _token: '{{ csrf_token() }}',
+        },
+        success: function(response) {
+            console.log(`${nama} berhasil ditambahkan ke sesi.`);
+        },
+        error: function(xhr) {
+            console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
+        },
+    });
+}
+
+// Fungsi untuk menyimpan nilai jumlah barang ke sessionStorage
+function simpanJumlahKeSessionStorage() {
+                $('#selectedBarangTable tbody tr').each(function() {
+                    let row = $(this);
+                    let barangId = row.data('id');
+                    let jumlah = row.find('.jumlah-barang').val();
+
+                    // Simpan jumlah barang ke sessionStorage dengan key unik berdasarkan barangId
+                    sessionStorage.setItem('jumlah_' + barangId, jumlah);
+                    console.log(`Jumlah barang dengan ID ${barangId} disimpan: ${jumlah}`); // Debug
+                });
+            }
+
                         // Saat barang berhasil di-scan QR Code
                         function scanQRCode() {
                             canvas.width = video.videoWidth;
@@ -590,51 +700,64 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.exists) {
-                console.log(data.exists);
-                // Ambil jumlah dari sessionStorage
-                let storedJumlah = sessionStorage.getItem('jumlah_' + data.id);
+                                            console.log(data.exists);
+                                            // Ambil jumlah dari sessionStorage
+                                            let storedJumlah = sessionStorage.getItem('jumlah_' + data.id);
 
-                // Perbarui jumlah di sessionStorage
-                let jumlahBaru = storedJumlah ? parseInt(storedJumlah) + 1 : 1;
-                sessionStorage.setItem('jumlah_' + data.id, jumlahBaru);
+                                            // Perbarui jumlah di sessionStorage
+                                            let jumlahBaru = storedJumlah ? parseInt(storedJumlah) + 1 : 1;
+                                            sessionStorage.setItem('jumlah_' + data.id, jumlahBaru);
 
-                // Perbarui jumlah barang yang sudah ada di tabel
-                let barangTableRow = document.querySelector(`#selectedBarangTable tr[data-id="${data.id}"]`);
-                if (barangTableRow) {
-                    let inputJumlah = barangTableRow.querySelector('.jumlah-barang');
-                    inputJumlah.value = parseInt(inputJumlah.value) + 1; // Tambahkan jumlah di tabel
-                } else {
-                    // Jika barang tidak ditemukan di tabel, kirim ke backend
-                    $.ajax({
-                        url: '/pembelian/edit-tambah-sesi',
-                        method: 'POST',
-                        data: {
-                            id: data.id,
-                            nama: data.nama,
-                            harga: data.harga,
-                            jumlah: jumlahBaru, // Kirim jumlah yang diperbarui
-                            source: 'qr',
-                            _token: '{{ csrf_token() }}',
-                        },
-                        success: function(response) {
+                                            // Perbarui jumlah barang yang sudah ada di tabel
+                                            let barangTableRow = document.querySelector(`#selectedBarangTable tr[data-id="${data.id}"]`);
+                                            if (barangTableRow) {
+                                                let inputJumlah = barangTableRow.querySelector('.jumlah-barang');
+                                                inputJumlah.value = parseInt(inputJumlah.value) + 1; // Tambahkan jumlah di tabel
+                                            } else {
+                                                // Jika barang tidak ditemukan di tabel, kirim ke backend
+                                                $.ajax({
+                                                    url: '/pembelian/edit-tambah-sesi',
+                                                    method: 'POST',
+                                                    data: {
+                                                        id: data.id,
+                                                        nama: data.nama,
+                                                        harga: data.harga,
+                                                        // jumlah: jumlahBaru, // Kirim jumlah yang diperbarui
+                                                        // source: 'qr',
+                                                        _token: '{{ csrf_token() }}',
+                                                    },
+                                                    success: function(response) {
+                                                        
                             console.log(response.message);
-                            // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
-                            sessionStorage.setItem('reloadAndCalculate', 'true');
-                            location.reload();
-                        },
-                        error: function(xhr) {
-                            if (xhr.status === 400) {
-                                alert(xhr.responseJSON.message);
-                            } else {
-                                console.error(xhr.responseText);
-                            }
-                        },
-                    });
-                }
-            } else {
-                alert('Barang tidak ditemukan!');
-            }
-        });
+                            // Sebelum reload, tambahkan semua barang yang ada di tabel ke sesi
+                            $('#selectedBarangTable tbody tr').each(function() {
+                                let row = $(this);
+                                let barangId = row.data('id');
+                                let nama = row.find('td:nth-child(2)').text().trim();
+                                let harga = row.find('.harga-barang').val();
+
+                                console.log({ barangId, nama, harga }); // Debug data
+                                tambahBarangKeSesi(barangId, nama, harga); // Tambahkan ke sesi
+                            });
+                            // Simpan nilai jumlah barang ke sessionStorage
+                            simpanJumlahKeSessionStorage();
+                                                        // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
+                                                        sessionStorage.setItem('reloadAndCalculate', 'true');
+                                                        location.reload();
+                                                    },
+                                                    error: function(xhr) {
+                                                        if (xhr.status === 400) {
+                                                            alert(xhr.responseJSON.message);
+                                                        } else {
+                                                            console.error(xhr.responseText);
+                                                        }
+                                                    },
+                                                });
+                                            }
+                                        } else {
+                                            alert('Barang tidak ditemukan!');
+                                        }
+                                    });
                             } else {
                                 // Jika QR Code tidak terdeteksi, teruskan untuk scan
                                 requestAnimationFrame(scanQRCode);

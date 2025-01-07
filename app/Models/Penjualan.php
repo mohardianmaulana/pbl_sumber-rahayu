@@ -114,21 +114,27 @@ class Penjualan extends Model
         $validator = Validator::make($request->all(), [
             'barang_id' => 'required|array|min:1',
             'barang_id.*' => 'required|exists:barang,id',
-            'harga_jual.*' => 'required|numeric|min:1',
-            'jumlah.*' => 'required|numeric|min:1',
-            'bayar' => 'required|numeric|min:1',
+            'harga_jual.*' => 'required|numeric|min:1|max:999999999999999',
+            'jumlah.*' => 'required|numeric|min:1|max:99999999',
+            'bayar' => 'required|numeric|min:1|max:999999999999999',
         ], [
             'barang_id.required' => 'Harus memilih setidaknya satu barang',
+            'barang_id.array' => 'Barang harus berupa array',
+            'barang_id.min' => 'Harus memilih setidaknya satu barang',
             'barang_id.*.required' => 'Barang tidak valid',
+            'barang_id.*.exists' => 'Barang tidak ditemukan dalam database',
             'harga_jual.*.required' => 'Harga jual wajib diisi',
             'harga_jual.*.numeric' => 'Harga jual harus berupa angka',
             'harga_jual.*.min' => 'Harga jual tidak boleh kurang dari 1',
+            'harga_jual.*.max' => 'Harga jual tidak boleh lebih dari 999999999999999',
             'jumlah.*.required' => 'Jumlah wajib diisi',
             'jumlah.*.numeric' => 'Jumlah harus berupa angka',
             'jumlah.*.min' => 'Jumlah tidak boleh kurang dari 1',
+            'jumlah.*.max' => 'Jumlah tidak boleh lebih dari 99999999',
             'bayar.required' => 'Bayar wajib diisi',
             'bayar.numeric' => 'Bayar harus berupa angka',
             'bayar.min' => 'Bayar tidak boleh kurang dari 1',
+            'bayar.max' => 'Bayar tidak boleh lebih dari 999999999999999',
         ]);
 
         // Jika validasi gagal, kembalikan error
@@ -228,21 +234,17 @@ class Penjualan extends Model
             ->whereNull('harga_barang.tanggal_selesai') // Hanya ambil harga yang belum selesai
             ->get();
 
-        // Gabungkan data pivot dan sesi
-        $dataPivot = $penjualan->barangs->map(function ($barang) {
-            return [
-                'id' => $barang->id,
-                'nama' => $barang->nama,
-                'harga' => $barang->pivot->harga, // Data dari pivot
-                'jumlah' => $barang->pivot->jumlah, // Data jumlah dari pivot
-            ];
-        })->toArray(); // Ambil data pivot barang
-        $dataFinal = array_merge($dataPivot, $dataBarang);
-
-        // Pastikan semua elemen di $dataFinal memiliki struktur konsisten
-        $dataFinal = array_map(function ($item) {
-            return is_array($item) ? $item : [];
-        }, $dataFinal);
+        // Gabungkan data hanya jika sesi kosong, jika tidak hanya gunakan data sesi
+    $dataFinal = empty($dataBarang)
+    ? $penjualan->barangs->map(function ($barang) {
+        return [
+            'id' => $barang->id,
+            'nama' => $barang->nama,
+            'harga' => $barang->pivot->harga, // Data dari pivot
+            'jumlah' => $barang->pivot->jumlah, // Data jumlah dari pivot
+        ];
+    })->toArray()
+    : $dataBarang;
 
         // Jika berhasil, kembalikan data yang diperlukan
         return [
@@ -254,8 +256,43 @@ class Penjualan extends Model
         ];
     }
 
-    public static function updatePenjualan($data, $id)
+    public static function updatePenjualan($data, $request, $id)
     {
+        // Validasi data request
+        $validator = Validator::make($request->all(), [
+            'barang_id' => 'required|array|min:1',
+            'barang_id.*' => 'required|exists:barang,id',
+            'harga_jual.*' => 'required|numeric|min:1|max:999999999999999',
+            'jumlah.*' => 'required|numeric|min:1|max:99999999',
+            'bayar' => 'required|numeric|min:1|max:999999999999999',
+        ], [
+            'barang_id.required' => 'Harus memilih setidaknya satu barang',
+            'barang_id.array' => 'Barang harus berupa array',
+            'barang_id.min' => 'Harus memilih setidaknya satu barang',
+            'barang_id.*.required' => 'Barang tidak valid',
+            'barang_id.*.exists' => 'Barang tidak ditemukan dalam database',
+            'harga_jual.*.required' => 'Harga jual wajib diisi',
+            'harga_jual.*.numeric' => 'Harga jual harus berupa angka',
+            'harga_jual.*.min' => 'Harga jual tidak boleh kurang dari 1',
+            'harga_jual.*.max' => 'Harga jual tidak boleh lebih dari 999999999999999',
+            'jumlah.*.required' => 'Jumlah wajib diisi',
+            'jumlah.*.numeric' => 'Jumlah harus berupa angka',
+            'jumlah.*.min' => 'Jumlah tidak boleh kurang dari 1',
+            'jumlah.*.max' => 'Jumlah tidak boleh lebih dari 99999999',
+            'bayar.required' => 'Bayar wajib diisi',
+            'bayar.numeric' => 'Bayar harus berupa angka',
+            'bayar.min' => 'Bayar tidak boleh kurang dari 1',
+            'bayar.max' => 'Bayar tidak boleh lebih dari 999999999999999',
+        ]);
+
+        // Jika validasi gagal, kembalikan error
+        if ($validator->fails()) {
+            return [
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ];
+        }
+
         // Cari data penjualan berdasarkan ID
         $penjualan = Penjualan::find($id);
 
@@ -263,17 +300,6 @@ class Penjualan extends Model
             return [
                 'status' => 'error',
                 'message' => 'Penjualan tidak ditemukan.',
-            ];
-        }
-
-        // Cek apakah tanggal transaksi lebih dari satu bulan yang lalu
-        $tanggalTransaksi = Carbon::parse($penjualan->tanggal_transaksi);
-        $satuBulanLalu = Carbon::now()->subMonth();
-
-        if ($tanggalTransaksi->lt($satuBulanLalu)) {
-            return [
-                'status' => 'error',
-                'message' => 'Penjualan lebih dari satu bulan tidak dapat diedit.',
             ];
         }
 

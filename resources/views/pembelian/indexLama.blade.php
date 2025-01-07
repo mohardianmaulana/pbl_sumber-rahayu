@@ -32,15 +32,6 @@
                     </div>
 
                     <div class="my-3 p-3 bg-body shadow-sm" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
-                        @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
                         @if (session('success'))
                         <div class="alert alert-success">
                             {{ session('success') }}
@@ -72,6 +63,20 @@
                                             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalDetail{{ $item->id }}">
                                                 <i class="fas fa-info-circle"></i> Detail
                                             </button>
+                                            @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                            @if ($item->status == 1)
+                                            <a href="{{ url('pembelian/'.$item->id.'/edit-barang-baru') }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                                Edit
+                                            </a>
+                                            @else
+                                            <a href="{{ url('pembelian/'.$item->id.'/edit') }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                                Edit
+                                            </a>
+                                            @endif
+
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

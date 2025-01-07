@@ -179,24 +179,46 @@ class Barang extends Model
     {
         // Validasi input dari request
         $validator = Validator::make($request->all(), [
-            'nama' => 'required',
-            'minLimit' => 'required',
+            'nama' => 'required|string|regex:/^[a-zA-Z0-9\s]+$/|min:3|max:50',
+            'minLimit' => 'required|numeric|min:1|max:99999999',
             'maxLimit' => [
                 'required',
                 'numeric',
+                'min:1',
+                'max:99999999',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($value < $request->minLimit) {
                         $fail('Max Limit tidak boleh lebih kecil daripada Min Limit');
                     }
                 }
             ],
-            'kategori_id' => 'required',
-            'gambar' => 'nullable|image|file|mimes:jpg,png|min:1|max:2048',
+            'kategori_id' => 'required|numeric|min:1|max:99999999',
+            'gambar' => 'nullable|image|file|mimes:jpg,png|min:100|max:2048',
         ], [
-            'nama.required' => 'Nama barang Barang wajib diisi',
+            'nama.required' => 'Nama barang wajib diisi',
+            'nama.regex' => 'Nama barang hanya boleh mengandung huruf, angka, dan spasi',
+            'nama.min' => 'Nama barang harus memiliki minimal 3 karakter',
+            'nama.max' => 'Nama barang tidak boleh lebih dari 50 karakter',
+
             'minLimit.required' => 'Min Limit wajib diisi',
+            'minLimit.numeric' => 'Min Limit harus berupa angka',
+            'minLimit.min' => 'Min Limit tidak boleh kurang dari 1',
+            'minLimit.max' => 'Min Limit tidak boleh lebih dari 99999999',
+
             'maxLimit.required' => 'Max Limit wajib diisi',
+            'maxLimit.numeric' => 'Max Limit harus berupa angka',
+            'maxLimit.min' => 'Max Limit tidak boleh kurang dari 1',
+            'maxLimit.max' => 'Max Limit tidak boleh lebih dari 99999999',
+
             'kategori_id.required' => 'Kategori wajib diisi',
+            'kategori_id.numeric' => 'Kategori harus berupa angka',
+            'kategori_id.min' => 'Kategori tidak boleh kurang dari 1',
+            'kategori_id.max' => 'Kategori tidak boleh lebih dari 99999999',
+
+            'gambar.image' => 'File yang diunggah harus berupa gambar',
+            'gambar.mimes' => 'Gambar hanya boleh bertipe jpg atau png',
+            'gambar.min' => 'Ukuran file gambar tidak boleh kurang dari 100 KB',
+            'gambar.max' => 'Ukuran file gambar tidak boleh lebih dari 2048 KB',
         ]);
 
         // Jika validasi gagal

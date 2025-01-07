@@ -88,9 +88,9 @@ class CustomerController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'required',
-            'nomor' => 'required',
-            'alamat' => 'required',
+            'nama' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
+            'nomor' => 'required|string|regex:/^[0-9\s]+$/|min:9|max:13',
+            'alamat' => 'required|string|min:3|max:100',
         ], [
             'nama.required' => 'Nama customer wajib diisi',
             'nomor.required' => 'Nomor HP wajib diisi',

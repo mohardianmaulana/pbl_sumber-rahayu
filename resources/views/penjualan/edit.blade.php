@@ -98,7 +98,7 @@
                                     @foreach($dataFinal as $index => $barang)
                                     @if(is_array($barang)) <!-- Validasi tambahan -->
                                     <tr class="text-center" data-id="{{ $barang['id'] ?? '' }}">
-                                        <td class="col-md-1 text-center">{{ $index + 1 }}</td>
+                                        <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
                                         <td class="col-md-3 text-center">{{ $barang['nama'] ?? '-' }}</td>
                                         <td class="col-md-2 text-center">
                                             Rp. {{ isset($barang['harga']) ? number_format($barang['harga'], 0, ',', '.') : '-' }}
@@ -168,8 +168,64 @@
 
     <script>
         $(document).ready(function() {
-            hitungTotal();
-            hitungKembali();
+            // Iterasi semua baris di tabel
+    $('#selectedBarangTable tbody tr').each(function () {
+        let row = $(this);
+        let barangId = row.data('id');
+
+        // Ambil nilai jumlah dari sessionStorage berdasarkan barangId
+        let jumlah = sessionStorage.getItem('jumlah_' + barangId);
+
+        // Jika nilai ditemukan, atur nilai input field jumlah
+        if (jumlah !== null) {
+            row.find('.jumlah-barang').val(jumlah);
+            console.log(`Jumlah barang dengan ID ${barangId} diatur ulang: ${jumlah}`); // Debug
+        }
+    });
+
+    function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
+    $.ajax({
+        url: '/penjualan/edit-tambah-sesi',
+        method: 'POST',
+        data: {
+            id: barangId,
+            nama: nama,
+            harga: harga,
+            source: source,
+            _token: '{{ csrf_token() }}',
+        },
+        success: function(response) {
+            console.log(`${nama} berhasil ditambahkan ke sesi.`);
+        },
+        error: function(xhr) {
+            console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
+        },
+    });
+}
+
+// Fungsi untuk menangani logika tambah-sesi
+function jalankanTambahSesi() {
+    if (!sessionStorage.getItem('isFirstReload')) {
+        // Tandai bahwa logika ini sudah dijalankan
+        sessionStorage.setItem('isFirstReload', 'true');
+
+        // Ambil semua data barang dari tabel
+        $('#selectedBarangTable tbody tr').each(function() {
+            let row = $(this);
+            let barangId = row.data('id');
+            let nama = row.find('td:nth-child(2)').text().trim();
+            let harga = row.find('.harga-barang').val();
+
+            console.log({ barangId, nama, harga }); // Debug data
+
+            // Kirim data barang ke sesi menggunakan AJAX
+            tambahBarangKeSesi(barangId, nama, harga);
+        });
+    }
+}
+
+            // hitungTotal();
+            // hitungKembali();
             if (sessionStorage.getItem('reloadAndCalculate') === 'true') {
                 // Panggil fungsi hitungTotal untuk menghitung total harga setelah reload
                 hitungTotal();
@@ -192,51 +248,64 @@
             }
 
             // Tangkap perubahan pada input jumlah barang dan simpan ke sessionStorage
-$(document).on('input', '.jumlah-barang', function() {
-    let barangId = $(this).closest('tr').data('id');
-    let jumlah = $(this).val();
-    // Simpan jumlah barang ke sessionStorage dengan key yang unik berdasarkan barangId
-    sessionStorage.setItem('jumlah_' + barangId, jumlah);
-});
+            $(document).on('input', '.jumlah-barang', function() {
+                let barangId = $(this).closest('tr').data('id');
+                let jumlah = $(this).val();
+                // Simpan jumlah barang ke sessionStorage dengan key yang unik berdasarkan barangId
+                sessionStorage.setItem('jumlah_' + barangId, jumlah);
+            });
 
-// Memulihkan nilai jumlah dari sessionStorage setelah halaman dimuat ulang
-window.addEventListener('load', function() {
-    // Periksa setiap elemen jumlah barang dan perbarui nilai berdasarkan sessionStorage
-    $('.jumlah-barang').each(function() {
-        let barangId = $(this).closest('tr').data('id');
-        // Ambil jumlah barang yang tersimpan di sessionStorage
-        let savedJumlah = sessionStorage.getItem('jumlah_' + barangId);
+            // Memulihkan nilai jumlah dari sessionStorage setelah halaman dimuat ulang
+            window.addEventListener('load', function() {
+                // Periksa setiap elemen jumlah barang dan perbarui nilai berdasarkan sessionStorage
+                $('.jumlah-barang').each(function() {
+                    let barangId = $(this).closest('tr').data('id');
+                    // Ambil jumlah barang yang tersimpan di sessionStorage
+                    let savedJumlah = sessionStorage.getItem('jumlah_' + barangId);
 
-        // Jika ada jumlah yang disimpan di sessionStorage, gunakan nilai tersebut
-        if (savedJumlah) {
-            $(this).val(savedJumlah);
-        } else {
-            // Jika tidak ada nilai yang disimpan di sessionStorage, gunakan nilai dari database
-            let databaseJumlah = $(this).data($barang['jumlah']); // Pastikan data jumlah ada di HTML, misalnya via data-attribute
-            if (databaseJumlah) {
-                $(this).val(databaseJumlah); // Terapkan nilai jumlah dari database
-            } else {
-                $(this).val(1); // Jika tidak ada nilai dari database, set ke 1 sebagai default
-            }
-        }
-    });
+                    // Jika ada jumlah yang disimpan di sessionStorage, gunakan nilai tersebut
+                    if (savedJumlah) {
+                        $(this).val(savedJumlah);
+                    } else {
+                        // Jika tidak ada nilai yang disimpan di sessionStorage, gunakan nilai dari database
+                        let databaseJumlah = $(this).data($barang['jumlah']); // Pastikan data jumlah ada di HTML, misalnya via data-attribute
+                        if (databaseJumlah) {
+                            $(this).val(databaseJumlah); // Terapkan nilai jumlah dari database
+                        } else {
+                            $(this).val(1); // Jika tidak ada nilai dari database, set ke 1 sebagai default
+                        }
+                    }
+                });
 
-    // Panggil hitungTotal setelah memulihkan nilai jumlah
-    hitungTotal();
-});
+                // Panggil hitungTotal setelah memulihkan nilai jumlah
+                hitungTotal();
+            });
 
-// Tangkap event klik pada tombol kembali
-document.getElementById('kembaliBtn').addEventListener('click', function(e) {
-        // Hapus semua data dari sessionStorage
-        sessionStorage.clear();
-    });
+            // Tangkap event klik pada tombol kembali
+            document.getElementById('kembaliBtn').addEventListener('click', function(e) {
+                    // Hapus semua data dari sessionStorage
+                    sessionStorage.clear();
+                });
 
-     // Ambil semua ID barang yang ada di tabel dan simpan dalam array barangIds
-     var barangIds = [];
-    $('#selectedBarangTable tbody tr').each(function() {
-        var barangId = $(this).data('id');
-        barangIds.push(barangId);
-    });
+            // Fungsi untuk menyimpan nilai jumlah barang ke sessionStorage
+            function simpanJumlahKeSessionStorage() {
+                        $('#selectedBarangTable tbody tr').each(function() {
+                            let row = $(this);
+                            let barangId = row.data('id');
+                            let jumlah = row.find('.jumlah-barang').val();
+
+                            // Simpan jumlah barang ke sessionStorage dengan key unik berdasarkan barangId
+                            sessionStorage.setItem('jumlah_' + barangId, jumlah);
+                            console.log(`Jumlah barang dengan ID ${barangId} disimpan: ${jumlah}`); // Debug
+                        });
+                    }
+
+            // Ambil semua ID barang yang ada di tabel dan simpan dalam array barangIds
+            var barangIds = [];
+            $('#selectedBarangTable tbody tr').each(function() {
+                var barangId = $(this).data('id');
+                barangIds.push(barangId);
+            });
 
             // Saat memilih barang dari modal
             $(document).on('click', '.pilihBarangBtn', function() {
@@ -262,6 +331,17 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                         },
                         success: function(response) {
                             console.log(response.message);
+                            $('#selectedBarangTable tbody tr').each(function() {
+                                let row = $(this);
+                                let barangId = row.data('id');
+                                let nama = row.find('td:nth-child(2)').text().trim();
+                                let harga = row.find('.harga-barang').val();
+
+                                console.log({ barangId, nama, harga }); // Debug data
+                                tambahBarangKeSesi(barangId, nama, harga); // Tambahkan ke sesi
+                            });
+                            // Sebelum reload, simpan nilai jumlah barang ke sessionStorage
+                            simpanJumlahKeSessionStorage();
                             // Tambahkan barang ke tabel atau sesi (mungkin perlu memuat ulang tabel)
                             sessionStorage.setItem('reload', 'true'); // Set flag reloadPage
                             location.reload(); // Reload halaman untuk menampilkan barang yang baru
@@ -360,37 +440,32 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                 hitungTotal();
             });
 
-            $(document).on('click', '.deleteBarangBtn', function() {
-                const barangId = $(this).data('id');
+            $('.deleteBarangBtn').on('click', function () {
+    const barangId = $(this).data('id');
+    if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+        $.ajax({
+            url: '/penjualan/edit-hapus-sesi',
+            method: 'POST',
+            data: {
+                id: barangId,
+                _token: '{{ csrf_token() }}',
+            },
+            success: function (response) {
+                alert(response.message);
+                $(`tr[data-id="${barangId}"]`).remove(); // Hapus baris dari tabel
+                updateNomorUrut(); // Perbarui nomor urut
+                hitungTotal(); // Perbarui total harga
 
-                    // Hapus data jumlah barang dari sessionStorage
-                    sessionStorage.removeItem('jumlah_' + barangId);
-
-                    // Hapus baris barang dari tabel
-                    $(this).closest('tr').remove();
-
-                    // Panggil fungsi hitungTotal untuk memperbarui total harga setelah barang dihapus
-                    hitungTotal();
-
-                // Hapus barang dari sesi melalui AJAX
-                $.ajax({
-                    url: '/penjualan/edit-hapus-sesi',
-                    method: 'POST',
-                    data: {
-                        id: barangId,
-                        _token: '{{ csrf_token() }}',
-                    },
-                    success: function(response) {
-                        console.log(response.message);
-                        $(`tr[data-id="${id}"]`).remove(); // Hapus baris dari tabel
-                        updateNomorUrut();
-                        hitungTotal(); // Update total harga
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                    },
-                });
-            });
+                // Reload halaman setelah penghapusan berhasil
+                location.reload();
+            },
+            error: function (xhr) {
+                alert('Gagal menghapus barang: ' + xhr.responseText);
+                console.error(xhr.responseText);
+            },
+        });
+    }
+});
 
 
             // Update nomor urut pada tabel
@@ -524,6 +599,40 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                             scanQRCode();
                         });
 
+                        // Fungsi untuk menambahkan barang ke sesi
+function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
+    $.ajax({
+        url: '/penjualan/edit-tambah-sesi',
+        method: 'POST',
+        data: {
+            id: barangId,
+            nama: nama,
+            harga: harga,
+            source: source,
+            _token: '{{ csrf_token() }}',
+        },
+        success: function(response) {
+            console.log(`${nama} berhasil ditambahkan ke sesi.`);
+        },
+        error: function(xhr) {
+            console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
+        },
+    });
+}
+
+// Fungsi untuk menyimpan nilai jumlah barang ke sessionStorage
+function simpanJumlahKeSessionStorage() {
+                $('#selectedBarangTable tbody tr').each(function() {
+                    let row = $(this);
+                    let barangId = row.data('id');
+                    let jumlah = row.find('.jumlah-barang').val();
+
+                    // Simpan jumlah barang ke sessionStorage dengan key unik berdasarkan barangId
+                    sessionStorage.setItem('jumlah_' + barangId, jumlah);
+                    console.log(`Jumlah barang dengan ID ${barangId} disimpan: ${jumlah}`); // Debug
+                });
+            }
+                        
                         // Saat barang berhasil di-scan QR Code
                         function scanQRCode() {
                             canvas.width = video.videoWidth;
@@ -575,6 +684,18 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                         },
                         success: function(response) {
                             console.log(response.message);
+                            // Sebelum reload, tambahkan semua barang yang ada di tabel ke sesi
+                            $('#selectedBarangTable tbody tr').each(function() {
+                                let row = $(this);
+                                let barangId = row.data('id');
+                                let nama = row.find('td:nth-child(2)').text().trim();
+                                let harga = row.find('.harga-barang').val();
+
+                                console.log({ barangId, nama, harga }); // Debug data
+                                tambahBarangKeSesi(barangId, nama, harga); // Tambahkan ke sesi
+                            });
+                            // Simpan nilai jumlah barang ke sessionStorage
+                            simpanJumlahKeSessionStorage();
                             // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
                             sessionStorage.setItem('reloadAndCalculate', 'true');
                             location.reload();

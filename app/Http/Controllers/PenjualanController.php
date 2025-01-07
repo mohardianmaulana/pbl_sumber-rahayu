@@ -187,9 +187,6 @@ class PenjualanController extends Controller
 
         return response()->json(['message' => 'Barang berhasil dihapus dari sesi']);
     }
-
-    
-    
     
     public function store(Request $request)
     {
@@ -271,10 +268,77 @@ class PenjualanController extends Controller
     
     public function editHapusSesi(Request $request)
     {
-        
-        $data = Session::get('edit_penjualan_barang', []);
-        unset($data[$request->id]); // Hapus barang berdasarkan ID
-        Session::put('edit_penjualan_barang', $data); // Update sesi
+        try {
+        // Validasi ID barang
+        $request->validate([
+            'id' => 'required|numeric',
+        ]);
+
+        $barangId = $request->id;
+
+        // Periksa apakah barang ada di tabel pivot
+        $existsInDatabase = DB::table('barang_penjualan')->where('barang_id', $barangId)->exists();
+
+        if ($existsInDatabase) {
+            // Ambil jumlah barang dari tabel pivot
+            $jumlahPivot = DB::table('barang_penjualan')
+                ->where('barang_id', $barangId)
+                ->value('jumlah_itemporary');
+
+            if ($jumlahPivot !== null) {
+                // Hapus barang dari tabel pivot
+                $deleted = DB::table('barang_penjualan')->where('barang_id', $barangId)->delete();
+
+                if ($deleted) {
+                    // Kurangi jumlah barang di tabel barang
+                    DB::table('barang')
+                        ->where('id', $barangId)
+                        ->increment('jumlah', $jumlahPivot);
+
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Barang berhasil dihapus dari database, dan jumlah barang diperbarui.',
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Gagal menghapus barang dari database.',
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Jumlah barang di tabel pivot tidak ditemukan.',
+                ], 500);
+            }
+        } else {
+            // Barang tidak ada di database, hapus dari sesi
+            $data = Session::get('edit_penjualan_barang', []);
+            if (isset($data[$barangId])) {
+                unset($data[$barangId]); // Hapus barang berdasarkan ID
+                Session::put('edit_penjualan_barang', $data); // Update sesi
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Barang berhasil dihapus dari sesi.',
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Barang tidak ditemukan di sesi atau database.',
+            ], 404);
+        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal menghapus barang: ' . $e->getMessage(),
+        ], 500);
+    }
+
+        // $data = Session::get('edit_penjualan_barang', []);
+        // unset($data[$request->id]); // Hapus barang berdasarkan ID
+        // Session::put('edit_penjualan_barang', $data); // Update sesi
         
         return response()->json(['message' => 'Barang berhasil dihapus dari sesi']);
     }

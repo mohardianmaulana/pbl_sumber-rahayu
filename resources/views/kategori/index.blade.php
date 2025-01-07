@@ -41,15 +41,6 @@
                     <h1 class="h3 mb-4 text-gray-800">Daftar Kategori</h1>
 
                     <div class="my-3 p-3 bg-body shadow-sm" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
-                        @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
                         @if (session('success'))
                         <div class="alert alert-success">
                             {{ session('success') }}
@@ -230,6 +221,11 @@
                             <label for="kode">Kode Persetujuan</label>
                             <input type="text" class="form-control" id="kode" name="kode" required>
                         </div>
+                        @if (count($errors) > 0)
+                    <div style="width:auto; color:#dc4c64; margin-top:0.25rem;">
+                        {{ $errors->first('kode') }}
+                    </div>
+                    @endif
                         <button type="submit" class="btn btn-primary">Kirim</button>
                     </form>
                 </div>

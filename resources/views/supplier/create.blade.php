@@ -38,20 +38,7 @@
                         <h1 class="h3 mb-0 text-gray-800">Tambah Supplier</h1>
                     </div>
                     <div class="my-3 p-3 bg-body shadow-sm" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
-                        @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
-                        @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                        @endif
+                        
                         <form action='{{ url('supplier') }}' method='post'>
                             @csrf
                             <a href='{{ url('supplier') }}' class="btn btn-secondary btn-sm">
@@ -89,7 +76,7 @@
                 <div class="mb-3 row">
                     <label for="nomor" class="col-sm-2 col-form-label required">Nomor</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" name='nomor' value="{{ old('nomor') }}" id="nomor">
+                        <input type="number" class="form-control" name='nomor' value="{{ old('nomor') }}" id="nomor">
                         @if (count($errors) > 0)
                         <div style="width:auto; color:#dc4c64; margin-top:0.25rem;">
                             {{ $errors->first('nomor') }}
