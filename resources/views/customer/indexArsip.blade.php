@@ -4,6 +4,41 @@
 <head>
     <title>Daftar Customer</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -47,27 +82,28 @@
                         </div>
                         @endif
 
+                        <div class="table-responsive">
                         <table id="myTable" class="table table-striped">
                             <thead>
                                 <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-2 text-center">Nama</th>
-                                    <th class="col-md-3 text-center">Nomor</th>
-                                    <th class="col-md-3 text-center">Alamat</th>
+                                    <th class="text-center">No</th>
+                                    <th class="text-center">Nama</th>
+                                    <th class="text-center">Nomor</th>
+                                    <th class="text-center">Alamat</th>
                                     @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <th class="col-md-2 text-center">Aksi</th>
+                                    <th class="text-center">Aksi</th>
                                     @endif
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($customers as $cust)
                                 <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-2 text-center">{{ $cust->nama }}</td>
-                                    <td class="col-md-3 text-center">{{ $cust->nomor }}</td>
-                                    <td class="col-md-3 text-center">{{ $cust->alamat }}</td>
+                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td class="text-center">{{ $cust->nama }}</td>
+                                    <td class="text-center">{{ $cust->nomor }}</td>
+                                    <td class="text-center">{{ $cust->alamat }}</td>
                                     @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <td class="col-md-2 text-center">
+                                    <td class="text-center">
                                         <div class="text-center">
                                             <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalPulihkan" data-id="{{ $cust->id }}">
                                                 <i class="fas fa-sync-alt"></i> Pulihkan
@@ -79,6 +115,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

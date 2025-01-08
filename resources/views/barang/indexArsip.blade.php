@@ -4,6 +4,41 @@
 <head>
     <title>Daftar Barang</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -49,6 +84,7 @@
                         </div>
                         @endif
 
+                        <div class="table-responsive">
                         <table class="table table-striped" id="myTable">
                             <thead>
                                 <tr class="text-center">
@@ -76,14 +112,7 @@
                                     <td class="col-md-1 text-center">{{ $item->jumlah }}</td>
                                     <td>
                                         <div class="text-center d-flex align-items-end">
-                                            @if ($item->jumlah > $item->minLimit && $item->jumlah < $item->maxLimit)
-                                                <i class="fas fa-circle fa-lg" style="color:transparent"></i>
-                                                @elseif ($item->jumlah <= $item->minLimit)
-                                                    <i class="fas fa-exclamation-circle fa-lg" style="color: red"></i>
-                                                    @elseif ($item->jumlah >= $item->maxLimit)
-                                                    <i class="fas fa-exclamation-circle fa-lg" style="color: orange"></i>
-                                                    @endif
-                                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                                @if (Auth::check() && Auth::user()->hasRole('admin'))
                                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalPulihkan" data-id="{{ $item->id }}">
                                                         <i class="fas fa-sync-alt"></i> Pulihkan
                                                     </button>
@@ -94,6 +123,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     </div>
 
                 </div>

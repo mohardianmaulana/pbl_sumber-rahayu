@@ -81,7 +81,6 @@ class Penjualan extends Model
                 'harga_barang.harga_beli',
                 'harga_barang.harga_jual'
             )
-            ->whereNull('barang.id_qr')
             ->whereNull('harga_barang.tanggal_selesai') // Hanya ambil harga yang belum selesai
             ->get();
 
@@ -230,7 +229,6 @@ class Penjualan extends Model
                 'harga_barang.harga_beli',
                 'harga_barang.harga_jual'
             )
-            ->whereNull('barang.id_qr')
             ->whereNull('harga_barang.tanggal_selesai') // Hanya ambil harga yang belum selesai
             ->get();
 

@@ -31,8 +31,8 @@ class JumlahBarangChart
         return $this->chart->donutChart()
             ->setTitle('Stok Barang')
             ->setSubtitle(date('M'))
-            ->setWidth(300)
-            ->setHeight(300)
+            ->setWidth(250)
+            ->setHeight(250)
             ->addData($barang)
             ->setLabels($label);
     }
@@ -65,8 +65,8 @@ class JumlahBarangChart
         return $this->chart->barChart()
             ->setTitle('Jumlah Barang Terjual per Item')
             ->setSubtitle('Penjualan Bulan ' . date('F Y'))
-            ->setWidth(300)
-            ->setHeight(300)
+            ->setWidth(250)
+            ->setHeight(250)
             ->addData('Jumlah', $barang)
             ->setXAxis($label);
     }

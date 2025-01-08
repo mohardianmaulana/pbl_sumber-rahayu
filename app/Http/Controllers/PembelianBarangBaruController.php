@@ -201,38 +201,61 @@ class PembelianBarangBaruController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'nama' => 'required',
-            'jumlah' => 'required|numeric|min:0',
-            'harga_beli' => 'required|numeric|min:1',
-            'harga_jual' => 'required|numeric|min:1',
-            'minLimit' => 'required|numeric|min:1',
+            'nama' => 'required|string|regex:/^[a-zA-Z0-9\s]+$/|min:3|max:50',
+            'jumlah' => 'required|numeric|min:1|max:99999999',
+            'harga_beli' => 'required|numeric|min:1|max:999999999999999',
+            'harga_jual' => 'required|numeric|min:1|max:999999999999999',
+            'minLimit' => 'required|numeric|min:1|max:99999999',
             'maxLimit' => [
                 'required',
                 'numeric',
                 'min:1',
+                'max:99999999',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($value < $request->minLimit) {
                         $fail('Max Limit tidak boleh lebih kecil daripada Min Limit');
                     }
                 }
             ],
-            'kategori_id' => 'required',
-            'supplier_id' => 'required',
+            'kategori_id' => 'required|numeric|min:1|max:99999999',
+            'supplier_id' => 'required|numeric|min:1|max:99999999',
             'gambar' => 'nullable|image|file|mimes:jpg,png|min:100|max:2048',
         ], [
-            'nama.required' => 'Nama Barang wajib diisi',
-            'jumlah.required' => 'Jumlah wajib diisi',
-            'jumlah.min' => 'Jumlah tidak boleh kurang dari 0',
-            'harga_beli.required' => 'Harga beli wajib diisi',
+            'nama.required' => 'Nama Barang harus diisi',
+            'nama.regex' => 'Nama Barang tidak boleh menggunakan simbol',
+            'nama.min' => 'Nama tidak boleh kurang dari 3 karakter',
+            'nama.max' => 'Nama tidak boleh lebih dari 50 karakter',
+            'jumlah.required' => 'Jumlah harus diisi',
+            'jumlah.min' => 'Jumlah tidak boleh kurang dari 1',
+            'jumlah.max' => 'Jumlah tidak boleh lebih dari 99999999',
+            'jumlah.numeric' => 'Jumlah harus berupa angka',
+            'harga_beli.required' => 'Harga beli harus diisi',
             'harga_beli.min' => 'Harga beli tidak boleh kurang dari 0',
-            'harga_jual.required' => 'Harga jual wajib diisi',
+            'harga_beli.max' => 'Harga beli tidak boleh lebih dari 999999999999999',
+            'harga_beli.numeric' => 'Harga beli harus berupa angka',
+            'harga_jual.required' => 'Harga jual harus diisi',
             'harga_jual.min' => 'Harga jual tidak boleh kurang dari 0',
-            'minLimit.required' => 'Min Limit wajib diisi',
+            'harga_jual.max' => 'Harga jual tidak boleh lebih dari 999999999999999',
+            'harga_jual.numeric' => 'Harga jual harus berupa angka',
+            'minLimit.required' => 'Min Limit harus diisi',
             'minLimit.min' => 'Min Limit tidak boleh kurang dari 0',
-            'maxLimit.required' => 'Max Limit wajib diisi',
+            'minLimit.max' => 'Min Limit tidak boleh lebih dari 999999999999999',
+            'minLimit.numeric' => 'Min Limit harus berupa angka',
+            'maxLimit.required' => 'Max Limit harus diisi',
             'maxLimit.min' => 'Max Limit tidak boleh kurang dari 0',
-            'kategori_id.required' => 'Kategori wajib diisi',
-            'supplier_id.required' => 'Supplier wajib diisi',
+            'maxLimit.max' => 'Max Limit tidak boleh lebih dari 999999999999999',
+            'maxLimit.numeric' => 'Max Limit harus berupa angka',
+            'kategori_id.required' => 'Pilih salah satu kategori!',
+            'kategori_id.min' => 'Kategori id tidak boleh kurang dari 0',
+            'kategori_id.max' => 'Kategori id tidak boleh lebih dari 99999999',
+            'kategori_id.numeric' => 'Kategori harus berupa angka',
+            'supplier_id.required' => 'Pilih salah satu supplier!',
+            'supplier_id.min' => 'Supplier id tidak boleh kurang dari 0',
+            'supplier_id.max' => 'Supplier id tidak boleh lebih dari 99999999',
+            'supplier_id.numeric' => 'Supplier harus berupa angka',
+            'gambar.min' => 'Ukuran Gambar tidak boleh kurang dari 100 kb',
+            'gambar.max' => 'Ukuran Gambar tidak boleh lebih dari 2048 kb',
+            'gambar.mimes' => 'Gambar harus berupa file dengan format jpg atau png',
         ]);
 
         if ($validator->fails()) {
@@ -317,6 +340,27 @@ class PembelianBarangBaruController extends Controller
                 'jumlah_itemporary' => $jumlah,
             ]);
         }
+
+        // Tambahkan logika ini setelah validasi dan sebelum pengembalian respons sukses
+        $hargaBarangTerakhir = HargaBarang::where('barang_id', $barang->id)
+        ->orderBy('tanggal_mulai', 'desc')
+        ->first();
+
+        if (!$hargaBarangTerakhir || $hargaBarangTerakhir->harga_beli != $request->harga_beli || $hargaBarangTerakhir->harga_jual != $request->harga_jual) {
+            if ($hargaBarangTerakhir) {
+                $hargaBarangTerakhir->update(['tanggal_selesai' => now()]);
+            }
+
+        HargaBarang::create([
+            'barang_id' => $barang->id,
+            'harga_beli' => $request->harga_beli,
+            'harga_jual' => $request->harga_jual,
+            'supplier_id' => $request->supplier_id,
+            'tanggal_mulai' => now(),
+            'tanggal_selesai' => null,
+        ]);
+        }
+
 
         return redirect()->to('pembelian')->with('success', 'Produk berhasil diperbarui');
     }

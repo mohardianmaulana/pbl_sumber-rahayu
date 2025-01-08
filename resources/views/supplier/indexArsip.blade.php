@@ -4,6 +4,41 @@
 <head>
     <title>Daftar Supplier</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -47,6 +82,7 @@
                         </div>
                         @endif
 
+                        <div class="table-responsive">
                         <table id="myTable" class="table table-striped">
                             <thead>
                                 <tr class="text-center">
@@ -79,6 +115,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

@@ -4,6 +4,41 @@
 <head>
     <title>Daftar Harga</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -56,30 +91,31 @@
                     </div>
                 </div> --}}
 
+                <div class="table-responsive">
                 <table id="myTable" class="table table-striped">
                     <thead>
                         <tr class="text-center">
-                            <th class="col-md-1 text-center">No</th>
-                            <th class="col-md-2 text-center">Nama Barang</th>
-                            <th class="col-md-2 text-center">Supplier</th>
-                            <th class="col-md-2 text-center">Harga Beli</th>
-                            <th class="col-md-2 text-center">Harga Jual</th>
-                            <th class="col-md-2 text-center">Tanggal Mulai</th>
-                            <th class="col-md-2 text-center">Tanggal Selesai</th>
-                            <th class="col-md-2 text-center">Aksi</th>
+                            <th class="text-center">No</th>
+                            <th class="text-center">Nama Barang</th>
+                            <th class="text-center">Supplier</th>
+                            <th class="text-center">Harga Beli</th>
+                            <th class="text-center">Harga Jual</th>
+                            <th class="text-center">Tanggal Mulai</th>
+                            <th class="text-center">Tanggal Selesai</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($hargaBarang as $item)
                         <tr class="text-center">
-                            <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                            <td class="col-md-2 text-center">{{ $item->nama_barang }}</td>
-                            <td class="col-md-2 text-center">{{ $item->nama_supplier }}</td>
-                            <td class="col-md-2 text-center">Rp. {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
-                            <td class="col-md-2 text-center">Rp. {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
-                            <td class="col-md-2 text-center">{{ $item->formatted_tanggal_mulai }}</td>
-                            <td class="col-md-2 text-center">{{ $item->formatted_tanggal_selesai }}</td>
-                            <td class="col-md-2 text-center">
+                            <td class="text-center">{{ $loop->iteration }}</td>
+                            <td class="text-center">{{ $item->nama_barang }}</td>
+                            <td class="text-center">{{ $item->nama_supplier }}</td>
+                            <td class="text-center">Rp. {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
+                            <td class="text-center">Rp. {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
+                            <td class="text-center">{{ $item->formatted_tanggal_mulai }}</td>
+                            <td class="text-center">{{ $item->formatted_tanggal_selesai }}</td>
+                            <td class="text-center">
                                 @if(!$item->isComplete)
                                 <div class="text-center">
                                     <a href='{{ url('harga/'.$item->id.'/edit') }}'
@@ -94,6 +130,7 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
                 {{-- {{ $kategori->withQueryString()->links() }} --}}
             </div>
 

@@ -4,6 +4,41 @@
 <head>
     <title>Daftar Persetujuan</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -46,32 +81,33 @@
                             {{ session('success') }}
                         </div>
                         @endif
+                        <div class="table-responsive">
                         <table id="myTable" class="table table-striped">
                             <thead>
                                 <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-1 text-center">Pegawai</th>
-                                    <th class="col-md-1 text-center">Perbuatan</th>
-                                    <th class="col-md-1 text-center">Nama Barang</th>
-                                    <th class="col-md-1 text-center">Nama Kategori</th>
-                                    <th class="col-md-1 text-center">Nama Supplier</th>
-                                    <th class="col-md-1 text-center">Nama Customer</th>
-                                    <th class="col-md-1 text-center">Nama Tabel</th>
-                                    <th class="col-md-2 text-center">Aksi</th>
+                                    <th class="text-center">No</th>
+                                    <th class="text-center">Pegawai</th>
+                                    <th class="text-center">Perbuatan</th>
+                                    <th class="text-center">Nama Barang</th>
+                                    <th class="text-center">Nama Kategori</th>
+                                    <th class="text-center">Nama Supplier</th>
+                                    <th class="text-center">Nama Customer</th>
+                                    <th class="text-center">Nama Tabel</th>
+                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($persetujuan as $item)
                                 <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->user_nama }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->kerjaAksi }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->barang_nama ?? '' }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->kategori_nama ?? '' }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->supplier_nama ?? '' }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->customer_nama ?? '' }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->namaTabel }}</td>
-                                    <td class="col-md-2 text-center">
+                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td class="text-center">{{ $item->user_nama }}</td>
+                                    <td class="text-center">{{ $item->kerjaAksi }}</td>
+                                    <td class="text-center">{{ $item->barang_nama ?? '' }}</td>
+                                    <td class="text-center">{{ $item->kategori_nama ?? '' }}</td>
+                                    <td class="text-center">{{ $item->supplier_nama ?? '' }}</td>
+                                    <td class="text-center">{{ $item->customer_nama ?? '' }}</td>
+                                    <td class="text-center">{{ $item->namaTabel }}</td>
+                                    <td class="text-center">
                                         <div class="text-center">
                                             @if (is_null($item->kodePersetujuan))
                                             <a href="#" onclick="generateCode('{{ $item->id }}')" class="btn btn-primary btn-sm" data-id="{{ $item->id }}">
