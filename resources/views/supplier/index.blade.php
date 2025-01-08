@@ -4,6 +4,23 @@
 <head>
     <title>Daftar Supplier</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -37,6 +54,7 @@
                             {{ session('success') }}
                         </div>
                         @endif
+
                         <!-- TOMBOL TAMBAH DATA -->
                         <div class="pb-3" style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -49,69 +67,72 @@
                             </div>
                         </div>
 
-                        <table id="myTable" class="table table-striped">
-                            <thead>
-                                <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-2 text-center">Nama</th>
-                                    <th class="col-md-3 text-center">Nomor</th>
-                                    <th class="col-md-3 text-center">Alamat</th>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <th class="col-md-2 text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($supplier as $supp)
-                                <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-2 text-center">{{ $supp->nama }}</td>
-                                    <td class="col-md-3 text-center">{{ $supp->nomor }}</td>
-                                    <td class="col-md-3 text-center">{{ $supp->alamat }}</td>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <td class="col-md-2 text-center">
-                                        <div class="text-center">
-                                            @php
-                                            $persetujuanForUser = \App\Models\Persetujuan::where('supplier_id', $supp->id)
-                                            ->where('user_id', Auth::id())
-                                            ->where('kerjaAksi', 'update')
-                                            ->where('namaTabel', 'supplier')
-                                            ->first();
-                                            $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
-                                            $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;
-                                            @endphp
-                                            @if (!$persetujuanForUser)
-                                            <a href="#" onclick="showConfirmModal('{{ url('supplier/' . $supp->id . '/checkEdit') }}')" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @elseif ($persetujuanDisetujui)
-                                            <a href="{{ route('supplier.edit', $supp->id) }}" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @elseif ($persetujuanIsiForm)
-                                            <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @else
-                                            <a href="#" onclick="showWaitModal()" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @endif
+                        <!-- Tabel Responsif -->
+                        <div class="table-responsive">
+                            <table id="myTable" class="table table-striped">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="text-center">No</th>
+                                        <th class="text-center">Nama</th>
+                                        <th class="text-center">Nomor</th>
+                                        <th class="text-center">Alamat</th>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                        <th class="text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($supplier as $supp)
+                                    <tr class="text-center">
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td class="text-center">{{ $supp->nama }}</td>
+                                        <td class="text-center">{{ $supp->nomor }}</td>
+                                        <td class="text-center">{{ $supp->alamat }}</td>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                        <td class="text-center">
+                                            <div class="text-center">
+                                                @php
+                                                $persetujuanForUser = \App\Models\Persetujuan::where('supplier_id', $supp->id)
+                                                ->where('user_id', Auth::id())
+                                                ->where('kerjaAksi', 'update')
+                                                ->where('namaTabel', 'supplier')
+                                                ->first();
+                                                $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
+                                                $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;
+                                                @endphp
+                                                @if (!$persetujuanForUser)
+                                                <a href="#" onclick="showConfirmModal('{{ url('supplier/' . $supp->id . '/checkEdit') }}')" class="btn btn-primary btn-sm mx-2">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit
+                                                </a>
+                                                @elseif ($persetujuanDisetujui)
+                                                <a href="{{ route('supplier.edit', $supp->id) }}" class="btn btn-primary btn-sm mx-2">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit
+                                                </a>
+                                                @elseif ($persetujuanIsiForm)
+                                                <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit
+                                                </a>
+                                                @else
+                                                <a href="#" onclick="showWaitModal()" class="btn btn-primary btn-sm mx-2">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit
+                                                </a>
+                                                @endif
 
-                                            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalArsipkan" data-id="{{ $supp->id }}">
-                                                <i class="fas fa-sync-alt"></i> Arsipkan
-                                            </button>
-                                        </div>
-                                    </td>
-                                    @endif
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalArsipkan" data-id="{{ $supp->id }}">
+                                                    <i class="fas fa-sync-alt"></i> Arsipkan
+                                                </button>
+                                            </div>
+                                        </td>
+                                        @endif
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

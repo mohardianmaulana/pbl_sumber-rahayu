@@ -110,19 +110,19 @@
                     <table class="table table-striped">
                         <thead>
                             <tr class="text-center">
-                                <th class="col-md-1 text-center">No</th>
-                                <th class="col-md-3 text-center">Nama Barang</th>
-                                <th class="col-md-2 text-center">Harga</th>
-                                <th class="col-md-2 text-center">Jumlah</th>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Nama Barang</th>
+                                <th class="text-center">Harga</th>
+                                <th class="text-center">Jumlah</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($item->barangs as $barang)
                             <tr class="text-center">
-                                <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                <td class="col-md-3 text-center">{{ $barang->nama }}</td>
-                                <td class="col-md-2 text-center">Rp. {{ number_format($barang->pivot->harga, 0, ',', '.') }}</td>
-                                <td class="col-md-2 text-center">{{ $barang->pivot->jumlah }}</td>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td class="text-center">{{ $barang->nama }}</td>
+                                <td class="text-center">Rp. {{ number_format($barang->pivot->harga, 0, ',', '.') }}</td>
+                                <td class="text-center">{{ $barang->pivot->jumlah }}</td>
                                 
                             </tr>
                             @endforeach

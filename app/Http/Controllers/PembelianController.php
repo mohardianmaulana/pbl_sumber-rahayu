@@ -7,6 +7,7 @@ use App\Models\Supplier;
 use App\Models\Barang;
 use App\Models\Kategori;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -360,35 +361,41 @@ public function editHapusSesi(Request $request)
         return redirect()->to('pembelian')->with('success', 'Pembelian berhasil diperbarui.');
     }
 
-    public function laporan()
+    public function laporan(Request $request)
 {
-    // Ambil laporan pembelian dengan join ke beberapa tabel
+    $startOfMonth = Carbon::now()->startOfMonth();
+    $endOfMonth = Carbon::now()->endOfMonth();
+
+    // Ambil laporan pembelian dengan filter bulan dan tahun
     $pembelian = DB::table('pembelian')
         ->join('barang_pembelian', 'pembelian.id', '=', 'barang_pembelian.pembelian_id')
         ->join('barang', 'barang_pembelian.barang_id', '=', 'barang.id')
         ->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
         ->join('user', 'pembelian.user_id', '=', 'user.id')
         ->select(
-            'pembelian.id', // Ambil ID pembelian untuk mengelompokkan data
+            'pembelian.id',
             'pembelian.tanggal_transaksi',
             'supplier.nama as nama_supplier',
-            DB::raw('GROUP_CONCAT(barang.nama SEPARATOR ", ") as barang_nama'), // Gabungkan nama barang
-            DB::raw('SUM(pembelian.total_harga) as total_harga'), // Hitung total harga pembelian
-            DB::raw('SUM(barang_pembelian.jumlah) as total_item'), // Hitung total jumlah item
+            DB::raw('GROUP_CONCAT(barang.nama SEPARATOR ", ") as barang_nama'),
+            DB::raw('SUM(pembelian.total_harga) as total_harga'),
+            DB::raw('SUM(barang_pembelian.jumlah) as total_item'),
             'user.name as nama_user',
         )
-        ->groupBy('pembelian.id', 'pembelian.tanggal_transaksi', 'supplier.nama', 'user.name') // Kelompokkan berdasarkan id pembelian
+        ->whereBetween('penjualan.tanggal_transaksi', [$startOfMonth, $endOfMonth])
+        ->groupBy('pembelian.id', 'pembelian.tanggal_transaksi', 'supplier.nama', 'user.name')
+        ->orderBy('pembelian.tanggal_transaksi', 'desc')
         ->get();
 
-    // Ambil data penjualan hari ini
+    // Ambil data pembelian detail
     $pembelianDetail = Pembelian::join('user', 'pembelian.user_id', '=', 'user.id')
-    ->leftJoin('supplier', 'pembelian.supplier_id', '=', 'supplier.id') // Join dengan tabel supplier
-    ->select('pembelian.*', 'user.name as user_nama', 'supplier.nama as supplier_nama') // Pilih nama customer
+    ->leftJoin('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
+    ->select('pembelian.*', 'user.name as user_nama', 'supplier.nama as supplier_nama')
     ->orderBy('pembelian.tanggal_transaksi', 'desc')
     ->get();
 
     // Kirim data laporan pembelian ke view
     return view('pembelian.laporanpembelian', compact('pembelian', 'pembelianDetail'));
 }
+
 
 }

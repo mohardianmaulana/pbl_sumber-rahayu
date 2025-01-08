@@ -6,12 +6,19 @@
     @include('template.header')
 
     <style>
+        .table-responsive {
+            overflow-x: auto; /* Tambahkan scroll horizontal jika tabel terlalu lebar */
+        }
+
         .table td,
         .table th {
-            vertical-align: middle;
-            /* Untuk vertikal */
-            text-align: center;
-            /* Untuk horizontal */
+            vertical-align: middle; /* Untuk vertikal */
+            text-align: center; /* Untuk horizontal */
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
         }
     </style>
 </head>
@@ -58,70 +65,68 @@
                             </div>
                         </div>
 
-                        <table id="myTable" class="table table-striped">
-                            <thead>
-                                <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-2 text-center">Nama Kategori</th>
-                                    <th class="col-md-2 text-center">Gambar Kategori</th>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <th class="col-md-2 text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($kategori as $item)
-                                <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-2 text-center">{{ $item->nama_kategori }}</td>
-                                    <td class="col-md-2 text-center">
-                                        <img src="{{ asset('img/' . $item->gambar_kategori) }}" alt="Gambar" style="max-width: 200px; max-height: 200px;">
-                                    </td>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <td class="col-md-2 text-center">
-                                        <div class="text-center">
-                                            @php
-                                            $persetujuanForUser = \App\Models\Persetujuan::where('kategori_id', $item->id)
-                                            ->where('user_id', Auth::id())
-                                            ->where('kerjaAksi', 'update')
-                                            ->where('namaTabel', 'Kategori')
-                                            ->first();
-                                            $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
-                                            $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;
-                                            @endphp
+                        <div class="table-responsive">
+                            <table id="myTable" class="table table-striped">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="text-center">No</th>
+                                        <th class="text-center">Nama Kategori</th>
+                                        <th class="text-center d-none d-sm-table-cell">Gambar Kategori</th>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                        <th class="text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($kategori as $item)
+                                    <tr class="text-center">
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td class="text-center">{{ $item->nama_kategori }}</td>
+                                        <td class="text-center d-none d-sm-table-cell">
+                                            <img src="{{ asset('img/' . $item->gambar_kategori) }}" alt="Gambar" class="img-fluid">
+                                        </td>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center">
+                                                @php
+                                                $persetujuanForUser = \App\Models\Persetujuan::where('kategori_id', $item->id)
+                                                ->where('user_id', Auth::id())
+                                                ->where('kerjaAksi', 'update')
+                                                ->where('namaTabel', 'Kategori')
+                                                ->first();
+                                                $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
+                                                $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;
+                                                @endphp
 
-                                            @if (!$persetujuanForUser)
-                                            <a href="#" onclick="showConfirmModal('{{ url('kategori/' . $item->id . '/checkEdit') }}')" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @elseif ($persetujuanDisetujui)
-                                            <a href="{{ route('kategori.edit', $item->id) }}" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @elseif ($persetujuanIsiForm)
-                                            <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @else
-                                            <a href="#" onclick="showWaitModal()" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @endif
+                                                @if (!$persetujuanForUser)
+                                                <a href="#" onclick="showConfirmModal('{{ url('kategori/' . $item->id . '/checkEdit') }}')" class="btn btn-primary btn-sm mx-1">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                @elseif ($persetujuanDisetujui)
+                                                <a href="{{ route('kategori.edit', $item->id) }}" class="btn btn-primary btn-sm mx-1">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                @elseif ($persetujuanIsiForm)
+                                                <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-1">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                @else
+                                                <a href="#" onclick="showWaitModal()" class="btn btn-primary btn-sm mx-1">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                @endif
 
-                                            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalArsipkan" data-id="{{ $item->id }}">
-                                                <i class="fas fa-sync-alt"></i> Arsipkan
-                                            </button>
-                                        </div>
-                                    </td>
-                                    @endif
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                                <button type="button" class="btn btn-danger btn-sm mx-1" data-toggle="modal" data-target="#modalArsipkan" data-id="{{ $item->id }}">
+                                                    <i class="fas fa-sync-alt"></i> Arsipkan
+                                                </button>
+                                            </div>
+                                        </td>
+                                        @endif
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>

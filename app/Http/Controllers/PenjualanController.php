@@ -371,7 +371,6 @@ class PenjualanController extends Controller
 
     public function laporan()
 {
-    // Get the start and end of the current month
     $startOfMonth = Carbon::now()->startOfMonth();
     $endOfMonth = Carbon::now()->endOfMonth();
 
@@ -399,7 +398,8 @@ class PenjualanController extends Controller
         'penjualan.kembali',
         'customer.nama',
         'user.name'
-    ) // Tambahkan semua kolom non-agregasi
+    ) 
+    ->orderBy('penjualan.tanggal_transaksi', 'desc')
     ->get();
 
     // Ambil data penjualan hari ini

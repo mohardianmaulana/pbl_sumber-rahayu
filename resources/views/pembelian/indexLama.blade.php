@@ -4,6 +4,41 @@
 <head>
     <title>Data Pembelian Barang</title>
     @include('template.header')
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Menambahkan meta tag untuk responsivitas -->
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -37,52 +72,53 @@
                             {{ session('success') }}
                         </div>
                         @endif
-                        <table id="myTable" class="table table-striped">
-                            <thead>
-                                <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-1 text-center">Tanggal</th>
-                                    <th class="col-md-1 text-center">Supplier</th>
-                                    <th class="col-md-1 text-center">Total Item</th>
-                                    <th class="col-md-1 text-center">Total Harga</th>
-                                    <th class="col-md-1 text-center">Pegawai</th>
-                                    <th class="col-md-1 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($pembelian as $item)
-                                <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->formatted_tanggal_transaksi }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->supplier_nama }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->total_item }}</td>
-                                    <td class="col-md-1 text-center">Rp. {{ number_format($item->total_harga, 0, ',', '.') }}</td>
-                                    <td class="col-md-1 text-center">{{ $item->user_nama }}</td>
-                                    <td class="col-md-1 text-center">
-                                        <div class="text-center">
-                                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalDetail{{ $item->id }}">
-                                                <i class="fas fa-info-circle"></i> Detail
-                                            </button>
-                                            @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                            @if ($item->status == 1)
-                                            <a href="{{ url('pembelian/'.$item->id.'/edit-barang-baru') }}" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @else
-                                            <a href="{{ url('pembelian/'.$item->id.'/edit') }}" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @endif
-
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="myTable" class="table table-striped">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="text-center">No</th>
+                                        <th class="text-center">Tanggal</th>
+                                        <th class="text-center">Supplier</th>
+                                        <th class="text-center">Total Item</th>
+                                        <th class="text-center">Total Harga</th>
+                                        <th class="text-center">Pegawai</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($pembelian as $item)
+                                    <tr class="text-center">
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td class="text-center">{{ $item->formatted_tanggal_transaksi }}</td>
+                                        <td class="text-center">{{ $item->supplier_nama }}</td>
+                                        <td class="text-center">{{ $item->total_item }}</td>
+                                        <td class="text-center">Rp. {{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                                        <td class="text-center">{{ $item->user_nama }}</td>
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center">
+                                                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalDetail{{ $item->id }}">
+                                                    <i class="fas fa-info-circle"></i> Detail
+                                                </button>
+                                                @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                                @if ($item->status == 1)
+                                                <a href="{{ url('pembelian/'.$item->id.'/edit-barang-baru') }}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit
+                                                </a>
+                                                @else
+                                                <a href="{{ url('pembelian/'.$item->id.'/edit') }}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit
+                                                </a>
+                                                @endif
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>

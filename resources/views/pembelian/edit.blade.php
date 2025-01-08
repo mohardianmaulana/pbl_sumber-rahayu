@@ -11,6 +11,38 @@
         content: " *";
         color: red;
     }
+    .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
 </style>
 
 <body id="page-top">
@@ -84,30 +116,31 @@
                                     </button>
                                 </div>
                             </div>
+                            <div class="table-responsive">
                             <table class="table table-striped" id="selectedBarangTable">
                                 <thead>
                                     <tr class="text-center">
-                                        <th class="col-md-1 text-center">No</th>
-                                        <th class="col-md-3 text-center">Nama</th>
-                                        <th class="col-md-2 text-center required">Harga Beli</th>
-                                        <th class="col-md-2 text-center required">Jumlah</th>
-                                        <th class="col-md-2 text-center">Aksi</th>
+                                        <th class="text-center">No</th>
+                                        <th class="text-center">Nama</th>
+                                        <th class="text-center required">Harga Beli</th>
+                                        <th class="text-center required">Jumlah</th>
+                                        <th class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($dataFinal as $index => $barang)
                                     @if(is_array($barang)) <!-- Validasi tambahan -->
                                     <tr class="text-center" data-id="{{ $barang['id'] ?? '' }}">
-                                        <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                        <td class="col-md-3 text-center">{{ $barang['nama'] ?? '-' }}</td>
-                                        <td class="col-md-2 text-center">
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td class="text-center">{{ $barang['nama'] ?? '-' }}</td>
+                                        <td class="text-center">
                                             <input type="number" class="form-control harga-barang" name="harga_beli[]" value="{{ $barang['harga'] ?? '' }}" oninput="hitungTotal()">
                                             <input type="hidden" name="barang_id[]" value="{{ $barang['id'] ?? '' }}">
                                         </td>
-                                        <td class="col-md-2 text-center">
+                                        <td class="text-center">
                                             <input type="number" class="form-control jumlah-barang" name="jumlah[]" value="{{ $barang['jumlah'] ?? '1' }}" oninput="hitungTotal()">
                                         </td>
-                                        <td class="col-md-2 text-center">
+                                        <td class="text-center">
                                             <button type="button" class="btn btn-danger btn-sm deleteBarangBtn" data-id="{{ $barang['id'] ?? '' }}">
                                                 <i class="fas fa-trash"></i> Hapus
                                             </button>
@@ -117,8 +150,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
-
-
+                            </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -161,59 +193,59 @@
         
         $(document).ready(function() {
             // Iterasi semua baris di tabel
-    $('#selectedBarangTable tbody tr').each(function () {
-        let row = $(this);
-        let barangId = row.data('id');
+            $('#selectedBarangTable tbody tr').each(function () {
+                let row = $(this);
+                let barangId = row.data('id');
 
-        // Ambil nilai jumlah dari sessionStorage berdasarkan barangId
-        let jumlah = sessionStorage.getItem('jumlah_' + barangId);
+                // Ambil nilai jumlah dari sessionStorage berdasarkan barangId
+                let jumlah = sessionStorage.getItem('jumlah_' + barangId);
 
-        // Jika nilai ditemukan, atur nilai input field jumlah
-        if (jumlah !== null) {
-            row.find('.jumlah-barang').val(jumlah);
-            console.log(`Jumlah barang dengan ID ${barangId} diatur ulang: ${jumlah}`); // Debug
-        }
-    });
+                // Jika nilai ditemukan, atur nilai input field jumlah
+                if (jumlah !== null) {
+                    row.find('.jumlah-barang').val(jumlah);
+                    console.log(`Jumlah barang dengan ID ${barangId} diatur ulang: ${jumlah}`); // Debug
+                }
+            });
             // Fungsi untuk menambahkan barang ke sesi
-function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
-    $.ajax({
-        url: '/pembelian/edit-tambah-sesi',
-        method: 'POST',
-        data: {
-            id: barangId,
-            nama: nama,
-            harga: harga,
-            source: source,
-            _token: '{{ csrf_token() }}',
-        },
-        success: function(response) {
-            console.log(`${nama} berhasil ditambahkan ke sesi.`);
-        },
-        error: function(xhr) {
-            console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
-        },
-    });
-}
-            // Fungsi untuk menangani logika tambah-sesi
-function jalankanTambahSesi() {
-    if (!sessionStorage.getItem('isFirstReload')) {
-        // Tandai bahwa logika ini sudah dijalankan
-        sessionStorage.setItem('isFirstReload', 'true');
+            function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
+                $.ajax({
+                    url: '/pembelian/edit-tambah-sesi',
+                    method: 'POST',
+                    data: {
+                        id: barangId,
+                        nama: nama,
+                        harga: harga,
+                        source: source,
+                        _token: '{{ csrf_token() }}',
+                    },
+                    success: function(response) {
+                        console.log(`${nama} berhasil ditambahkan ke sesi.`);
+                    },
+                    error: function(xhr) {
+                        console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
+                    },
+                });
+            }
+                        // Fungsi untuk menangani logika tambah-sesi
+            function jalankanTambahSesi() {
+                if (!sessionStorage.getItem('isFirstReload')) {
+                    // Tandai bahwa logika ini sudah dijalankan
+                    sessionStorage.setItem('isFirstReload', 'true');
 
-        // Ambil semua data barang dari tabel
-        $('#selectedBarangTable tbody tr').each(function() {
-            let row = $(this);
-            let barangId = row.data('id');
-            let nama = row.find('td:nth-child(2)').text().trim();
-            let harga = row.find('.harga-barang').val();
+                    // Ambil semua data barang dari tabel
+                    $('#selectedBarangTable tbody tr').each(function() {
+                        let row = $(this);
+                        let barangId = row.data('id');
+                        let nama = row.find('td:nth-child(2)').text().trim();
+                        let harga = row.find('.harga-barang').val();
 
-            console.log({ barangId, nama, harga }); // Debug data
+                        console.log({ barangId, nama, harga }); // Debug data
 
-            // Kirim data barang ke sesi menggunakan AJAX
-            tambahBarangKeSesi(barangId, nama, harga);
-        });
-    }
-}
+                        // Kirim data barang ke sesi menggunakan AJAX
+                        tambahBarangKeSesi(barangId, nama, harga);
+                    });
+                }
+            }
 
     // // Event handler untuk tombol hapus
     // $('#selectedBarangTable').on('click', '.deleteBarangBtn', function() {
@@ -266,44 +298,44 @@ function jalankanTambahSesi() {
             }
 
                 // Tangkap perubahan pada input jumlah barang dan simpan ke sessionStorage
-$(document).on('input', '.jumlah-barang', function() {
-    let barangId = $(this).closest('tr').data('id');
-    let jumlah = $(this).val();
-    // Simpan jumlah barang ke sessionStorage dengan key yang unik berdasarkan barangId
-    sessionStorage.setItem('jumlah_' + barangId, jumlah);
-});
+                $(document).on('input', '.jumlah-barang', function() {
+                    let barangId = $(this).closest('tr').data('id');
+                    let jumlah = $(this).val();
+                    // Simpan jumlah barang ke sessionStorage dengan key yang unik berdasarkan barangId
+                    sessionStorage.setItem('jumlah_' + barangId, jumlah);
+                });
 
-// Memulihkan nilai jumlah dari sessionStorage setelah halaman dimuat ulang
-window.addEventListener('load', function() {
-    // Periksa setiap elemen jumlah barang dan perbarui nilai berdasarkan sessionStorage
-    $('.jumlah-barang').each(function() {
-        let barangId = $(this).closest('tr').data('id');
-        // Ambil jumlah barang yang tersimpan di sessionStorage
-        let savedJumlah = sessionStorage.getItem('jumlah_' + barangId);
+                // Memulihkan nilai jumlah dari sessionStorage setelah halaman dimuat ulang
+                window.addEventListener('load', function() {
+                    // Periksa setiap elemen jumlah barang dan perbarui nilai berdasarkan sessionStorage
+                    $('.jumlah-barang').each(function() {
+                        let barangId = $(this).closest('tr').data('id');
+                        // Ambil jumlah barang yang tersimpan di sessionStorage
+                        let savedJumlah = sessionStorage.getItem('jumlah_' + barangId);
 
-        // Jika ada jumlah yang disimpan di sessionStorage, gunakan nilai tersebut
-        if (savedJumlah) {
-            $(this).val(savedJumlah);
-        } else {
-            // Jika tidak ada nilai yang disimpan di sessionStorage, gunakan nilai dari database
-            let databaseJumlah = $(this).data($barang['jumlah']); // Pastikan data jumlah ada di HTML, misalnya via data-attribute
-            if (databaseJumlah) {
-                $(this).val(databaseJumlah); // Terapkan nilai jumlah dari database
-            } else {
-                $(this).val(1); // Jika tidak ada nilai dari database, set ke 1 sebagai default
-            }
-        }
-    });
+                        // Jika ada jumlah yang disimpan di sessionStorage, gunakan nilai tersebut
+                        if (savedJumlah) {
+                            $(this).val(savedJumlah);
+                        } else {
+                            // Jika tidak ada nilai yang disimpan di sessionStorage, gunakan nilai dari database
+                            let databaseJumlah = $(this).data($barang['jumlah']); // Pastikan data jumlah ada di HTML, misalnya via data-attribute
+                            if (databaseJumlah) {
+                                $(this).val(databaseJumlah); // Terapkan nilai jumlah dari database
+                            } else {
+                                $(this).val(1); // Jika tidak ada nilai dari database, set ke 1 sebagai default
+                            }
+                        }
+                    });
 
-    // Panggil hitungTotal setelah memulihkan nilai jumlah
-    hitungTotal();
-});
+                    // Panggil hitungTotal setelah memulihkan nilai jumlah
+                    hitungTotal();
+                });
 
-// Tangkap event klik pada tombol kembali
-document.getElementById('kembaliBtn').addEventListener('click', function(e) {
-        // Hapus semua data dari sessionStorage
-        sessionStorage.clear();
-    });
+                // Tangkap event klik pada tombol kembali
+                document.getElementById('kembaliBtn').addEventListener('click', function(e) {
+                        // Hapus semua data dari sessionStorage
+                        sessionStorage.clear();
+                    });
                 // // Ambil data dari form edit saat halaman dibuka
                 // const dataBarang = [];
                 // $('#selectedBarangTable tbody tr').each(function() {
@@ -484,31 +516,31 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
             });
 
             $('.deleteBarangBtn').on('click', function () {
-    const barangId = $(this).data('id');
-    if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
-        $.ajax({
-            url: '/pembelian/edit-hapus-sesi',
-            method: 'POST',
-            data: {
-                id: barangId,
-                _token: '{{ csrf_token() }}',
-            },
-            success: function (response) {
-                alert(response.message);
-                $(`tr[data-id="${barangId}"]`).remove(); // Hapus baris dari tabel
-                updateNomorUrut(); // Perbarui nomor urut
-                hitungTotal(); // Perbarui total harga
+                const barangId = $(this).data('id');
+                if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+                    $.ajax({
+                        url: '/pembelian/edit-hapus-sesi',
+                        method: 'POST',
+                        data: {
+                            id: barangId,
+                            _token: '{{ csrf_token() }}',
+                        },
+                        success: function (response) {
+                            alert(response.message);
+                            $(`tr[data-id="${barangId}"]`).remove(); // Hapus baris dari tabel
+                            updateNomorUrut(); // Perbarui nomor urut
+                            hitungTotal(); // Perbarui total harga
 
-                // Reload halaman setelah penghapusan berhasil
-                location.reload();
-            },
-            error: function (xhr) {
-                alert('Gagal menghapus barang: ' + xhr.responseText);
-                console.error(xhr.responseText);
-            },
-        });
-    }
-});
+                            // Reload halaman setelah penghapusan berhasil
+                            location.reload();
+                        },
+                        error: function (xhr) {
+                            alert('Gagal menghapus barang: ' + xhr.responseText);
+                            console.error(xhr.responseText);
+                        },
+                    });
+                }
+            });
 
 
 
@@ -644,38 +676,38 @@ document.getElementById('kembaliBtn').addEventListener('click', function(e) {
                         });
 
                         // Fungsi untuk menambahkan barang ke sesi
-function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
-    $.ajax({
-        url: '/pembelian/edit-tambah-sesi',
-        method: 'POST',
-        data: {
-            id: barangId,
-            nama: nama,
-            harga: harga,
-            source: source,
-            _token: '{{ csrf_token() }}',
-        },
-        success: function(response) {
-            console.log(`${nama} berhasil ditambahkan ke sesi.`);
-        },
-        error: function(xhr) {
-            console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
-        },
-    });
-}
+                        function tambahBarangKeSesi(barangId, nama, harga, source = 'qr') {
+                            $.ajax({
+                                url: '/pembelian/edit-tambah-sesi',
+                                method: 'POST',
+                                data: {
+                                    id: barangId,
+                                    nama: nama,
+                                    harga: harga,
+                                    source: source,
+                                    _token: '{{ csrf_token() }}',
+                                    },
+                                success: function(response) {
+                                    console.log(`${nama} berhasil ditambahkan ke sesi.`);
+                                },
+                                error: function(xhr) {
+                                    console.error(`Gagal menambahkan barang ${nama} ke sesi:`, xhr.responseText);
+                                },
+                            });
+                        }   
 
-// Fungsi untuk menyimpan nilai jumlah barang ke sessionStorage
-function simpanJumlahKeSessionStorage() {
-                $('#selectedBarangTable tbody tr').each(function() {
-                    let row = $(this);
-                    let barangId = row.data('id');
-                    let jumlah = row.find('.jumlah-barang').val();
+                        // Fungsi untuk menyimpan nilai jumlah barang ke sessionStorage
+                        function simpanJumlahKeSessionStorage() {
+                            $('#selectedBarangTable tbody tr').each(function() {
+                                let row = $(this);
+                                let barangId = row.data('id');
+                                let jumlah = row.find('.jumlah-barang').val();
 
-                    // Simpan jumlah barang ke sessionStorage dengan key unik berdasarkan barangId
-                    sessionStorage.setItem('jumlah_' + barangId, jumlah);
-                    console.log(`Jumlah barang dengan ID ${barangId} disimpan: ${jumlah}`); // Debug
-                });
-            }
+                                // Simpan jumlah barang ke sessionStorage dengan key unik berdasarkan barangId
+                                sessionStorage.setItem('jumlah_' + barangId, jumlah);
+                                console.log(`Jumlah barang dengan ID ${barangId} disimpan: ${jumlah}`); // Debug
+                            });
+                        }
 
                         // Saat barang berhasil di-scan QR Code
                         function scanQRCode() {
@@ -728,19 +760,19 @@ function simpanJumlahKeSessionStorage() {
                                                     },
                                                     success: function(response) {
                                                         
-                            console.log(response.message);
-                            // Sebelum reload, tambahkan semua barang yang ada di tabel ke sesi
-                            $('#selectedBarangTable tbody tr').each(function() {
-                                let row = $(this);
-                                let barangId = row.data('id');
-                                let nama = row.find('td:nth-child(2)').text().trim();
-                                let harga = row.find('.harga-barang').val();
+                                                    console.log(response.message);
+                                                    // Sebelum reload, tambahkan semua barang yang ada di tabel ke sesi
+                                                        $('#selectedBarangTable tbody tr').each(function() {
+                                                            let row = $(this);
+                                                            let barangId = row.data('id');
+                                                            let nama = row.find('td:nth-child(2)').text().trim();
+                                                            let harga = row.find('.harga-barang').val();
 
-                                console.log({ barangId, nama, harga }); // Debug data
-                                tambahBarangKeSesi(barangId, nama, harga); // Tambahkan ke sesi
-                            });
-                            // Simpan nilai jumlah barang ke sessionStorage
-                            simpanJumlahKeSessionStorage();
+                                                            console.log({ barangId, nama, harga }); // Debug data
+                                                            tambahBarangKeSesi(barangId, nama, harga); // Tambahkan ke sesi
+                                                        });
+                                                        // Simpan nilai jumlah barang ke sessionStorage
+                                                        simpanJumlahKeSessionStorage();
                                                         // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
                                                         sessionStorage.setItem('reloadAndCalculate', 'true');
                                                         location.reload();
@@ -808,28 +840,28 @@ function simpanJumlahKeSessionStorage() {
                     <table class="table table-striped" id="barangTable">
                         <thead>
                             <tr class="text-center">
-                                <th class="col-md-1 text-center">No</th>
-                                <th class="col-md-3 text-center">Nama</th>
-                                <th class="col-md-2 text-center">Harga</th>
-                                <th class="col-md-2 text-center">Jumlah</th>
-                                <th class="col-md-2 text-center">Aksi</th>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Nama</th>
+                                <th class="text-center">Harga</th>
+                                <th class="text-center">Jumlah</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Daftar barang akan diisi secara dinamis dari database -->
                             @foreach($barangs as $index => $barang)
                             <tr>
-                                <td class="col-md-1 text-center">{{ $index + 1 }}</td>
-                                <td class="col-md-3 text-center">{{ $barang->nama }}</td>
-                                <td class="col-md-2 text-center">Rp. {{ number_format($barang->harga_beli, 0, ',', '.') }}
+                                <td class="text-center">{{ $index + 1 }}</td>
+                                <td class="text-center">{{ $barang->nama }}</td>
+                                <td class="text-center">Rp. {{ number_format($barang->harga_beli, 0, ',', '.') }}
                                     <!-- @if (isset($rataRataHargaBeli[$barang->id]))
                                     Rp. {{ number_format($rataRataHargaBeli[$barang->id], 0, ',', '.') }}
                                     @else
                                     -
                                     @endif -->
                                 </td>
-                                <td class="col-md-2 text-center">{{ $barang->jumlah }}</td>
-                                <td class="col-md-2 text-center">
+                                <td class="text-center">{{ $barang->jumlah }}</td>
+                                <td class="text-center">
                                     <button type="button" class="btn btn-primary pilihBarangBtn" data-id="{{ $barang->id }}" data-nama="{{ $barang->nama }}" data-harga="{{ $rataRataHargaBeli[$barang->id] ?? '' }}">Pilih</button>
                                 </td>
                             </tr>

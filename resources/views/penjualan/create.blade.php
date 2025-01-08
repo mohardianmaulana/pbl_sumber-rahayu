@@ -11,6 +11,38 @@
         content: " *";
         color: red;
     }
+    .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
 </style>
 
 <body id="page-top">
@@ -85,32 +117,33 @@
                                     </button>
                                 </div>
                             </div>
+                            <div class="table-responsive">
                             <table class="table table-striped" id="selectedBarangTable">
                                 <thead>
                                     <tr class="text-center">
-                                        <th class="col-md-1 text-center">No</th>
-                                        <th class="col-md-3 text-center">Nama Barang</th>
-                                        <th class="col-md-2 text-center">Harga</th>
-                                        <th class="col-md-2 text-center required">Jumlah</th>
-                                        <th class="col-md-2 text-center">Aksi</th>
+                                        <th class="text-center">No</th>
+                                        <th class="text-center">Nama Barang</th>
+                                        <th class="text-center">Harga</th>
+                                        <th class="text-center required">Jumlah</th>
+                                        <th class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($dataBarang as $index => $item)
                                     <tr class="text-center" data-id="{{ $item['id'] }}">
-                                        <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                        <td class="col-md-3 text-center">{{ $item['nama'] }}</td>
-                                        <td class="col-md-2 text-center">
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td class="text-center">{{ $item['nama'] }}</td>
+                                        <td class="text-center">
                                             Rp. {{ number_format($item['harga'], 0, ',', '.') }}
                                             <input type="hidden" class="harga-barang" name="harga_jual[]"
                                                 value="{{ $item['harga'] }}">
                                             <input type="hidden" name="barang_id[]" value="{{ $item['id'] }}">
                                         </td>
-                                        <td class="col-md-2 text-center">
+                                        <td class="text-center">
                                             <input type="number" class="form-control jumlah-barang" name="jumlah[]"
                                                 value="1" oninput="hitungTotal()">
                                         </td>
-                                        <td class="col-md-2 text-center">
+                                        <td class="text-center">
                                             <button type="button" class="btn btn-danger btn-sm deleteBarangBtn"
                                                 data-id="{{ $item['id'] }}">
                                                 <i class="fas fa-trash"></i> Hapus
@@ -120,6 +153,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -536,48 +570,48 @@
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.exists) {
-                console.log(data.exists);
-                // Ambil jumlah dari sessionStorage
-                let storedJumlah = sessionStorage.getItem('jumlah_' + data.id);
+                                        console.log(data.exists);
+                                        // Ambil jumlah dari sessionStorage
+                                        let storedJumlah = sessionStorage.getItem('jumlah_' + data.id);
 
-                // Jika jumlah ada di sessionStorage, tambahkan ke sesi di backend
-                let jumlahBaru = storedJumlah ? parseInt(storedJumlah) + 1 : 1;
+                                        // Jika jumlah ada di sessionStorage, tambahkan ke sesi di backend
+                                        let jumlahBaru = storedJumlah ? parseInt(storedJumlah) + 1 : 1;
 
-                // Kirim data ke backend
-                $.ajax({
-                    url: '/penjualan/tambah-sesi',
-                    method: 'POST',
-                    data: {
-                        id: data.id,
-                        nama: data.nama,
-                        harga: data.harga,
-                        jumlah: jumlahBaru, // Kirim jumlah yang diperbarui
-                        source: 'qr',
-                        _token: '{{ csrf_token() }}',
-                    },
-                    success: function(response) {
-                        console.log(response.message);
+                                        // Kirim data ke backend
+                                        $.ajax({
+                                            url: '/penjualan/tambah-sesi',
+                                            method: 'POST',
+                                            data: {
+                                                id: data.id,
+                                                nama: data.nama,
+                                                harga: data.harga,
+                                                jumlah: jumlahBaru, // Kirim jumlah yang diperbarui
+                                                source: 'qr',
+                                                _token: '{{ csrf_token() }}',
+                                            },
+                                            success: function(response) {
+                                                console.log(response.message);
 
-                        // Perbarui sessionStorage setelah backend berhasil diproses
-                        sessionStorage.setItem('jumlah_' + data.id, jumlahBaru);
+                                                // Perbarui sessionStorage setelah backend berhasil diproses
+                                                sessionStorage.setItem('jumlah_' + data.id, jumlahBaru);
 
-                        // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
-                        sessionStorage.setItem('reloadAndCalculate', 'true');
-                        location.reload();
-                    },
-                    error: function(xhr) {
-                        // Tampilkan pesan error jika barang sudah dipilih
-                        if (xhr.status === 400) {
-                            alert(xhr.responseJSON.message);
-                        } else {
-                            console.error(xhr.responseText);
-                        }
-                    },
-                });
-            } else {
-                alert('Barang tidak ditemukan!');
-            }
-        });
+                                                // Tandai bahwa halaman perlu di-reload dan fungsi hitungTotal akan dipanggil
+                                                sessionStorage.setItem('reloadAndCalculate', 'true');
+                                                location.reload();
+                                            },
+                                            error: function(xhr) {
+                                                // Tampilkan pesan error jika barang sudah dipilih
+                                                if (xhr.status === 400) {
+                                                    alert(xhr.responseJSON.message);
+                                                } else {
+                                                    console.error(xhr.responseText);
+                                                }
+                                            },
+                                        });
+                                    } else {
+                                        alert('Barang tidak ditemukan!');
+                                    }
+                                });
                             } else {
                                 // Jika QR Code tidak terdeteksi, teruskan untuk scan
                                 requestAnimationFrame(scanQRCode);
@@ -619,27 +653,27 @@
                     <table class="table table-striped" id="barangTable">
                         <thead>
                             <tr class="text-center">
-                                <th class="col-md-1 text-center">No</th>
-                                <th class="col-md-3 text-center">Nama</th>
-                                <th class="col-md-2 text-center">Harga Jual</th>
-                                <th class="col-md-2 text-center">Jumlah</th>
-                                <th class="col-md-2 text-center">Aksi</th>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Nama</th>
+                                <th class="text-center">Harga Jual</th>
+                                <th class="text-center">Jumlah</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($barang as $item)
                             <tr class="text-center">
-                                <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                <td class="col-md-3 text-center">{{ $item->nama }}</td>
-                                <td class="col-md-2 text-center"> Rp. {{ number_format($item->harga_jual, 0, ',', '.') }}
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td class="text-center">{{ $item->nama }}</td>
+                                <td class="text-center"> Rp. {{ number_format($item->harga_jual, 0, ',', '.') }}
                                     {{-- @if (isset($rataRataHargaBeli[$item->id]))
                                         Rp. {{ number_format($rataRataHargaBeli[$item->id], 0, ',', '.') }}
                                     @else
                                     -
                                     @endif --}}
                                 </td>
-                                <td class="col-md-2 text-center">{{ $item->jumlah }}</td>
-                                <td class="col-md-2 text-center">
+                                <td class="text-center">{{ $item->jumlah }}</td>
+                                <td class="text-center">
                                     <button type="button" class="btn btn-primary btn-sm pilihBarangBtn"
                                         data-id="{{ $item->id }}" data-nama="{{ $item->nama }}"
                                         data-harga="{{ $item->harga_jual }}" data-jumlah="{{ $item->jumlah }}">

@@ -4,6 +4,41 @@
 <head>
     <title>Data Transaksi</title>
     @include('template.header')
+
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table img {
+            max-width: 100px;
+            height: auto; /* Proporsional */
+        }
+
+        @media (max-width: 767px) {
+            .table td,
+            .table th {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -66,30 +101,30 @@
                         </form>
                     </div> --}}
 
-
+                    <div class="table-responsive">
                     <table class="table table-striped" id="myTable">
                         <thead>
                             <tr class="text-center">
-                                <th class="col-md-1 text-center">No</th>
-                                <th class="col-md-1 text-center">Tanggal</th>
-                                <th class="col-md-1 text-center">Total Item</th>
-                                <th class="col-md-1 text-center">Total Harga</th>
-                                <th class="col-md-1 text-center">Pegawai</th>
-                                <th class="col-md-1 text-center">Customer</th>
-                                <th class="col-md-1 text-center">Aksi</th>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Tanggal</th>
+                                <th class="text-center">Total Item</th>
+                                <th class="text-center">Total Harga</th>
+                                <th class="text-center">Pegawai</th>
+                                <th class="text-center">Customer</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($penjualan as $item)
                             <tr class="text-center">
-                                <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                <td class="col-md-1 text-center">{{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d-m-Y') }}</td>
-                                <td class="col-md-1 text-center">{{ $item->total_item }}</td>
-                                <td class="col-md-1 text-center">Rp. {{ number_format($item->total_harga)}}</td>
-                                <td class="col-md-1 text-center">{{ $item->user_nama }}</td>
-                                <td class="col-md-1 text-center">{{ $item->customer_nama }}</td>
-                                <td class="col-md-2 text-center">
-                                    <div class="text-center">
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td class="text-center">{{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d-m-Y') }}</td>
+                                <td class="text-center">{{ $item->total_item }}</td>
+                                <td class="text-center">Rp. {{ number_format($item->total_harga)}}</td>
+                                <td class="text-center">{{ $item->user_nama }}</td>
+                                <td class="text-center">{{ $item->customer_nama }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center">
                                         <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalDetail{{ $item->id }}">
                                             <i class="fas fa-info-circle"></i> Detail
                                         </button>
@@ -105,6 +140,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                     {{-- {{ $data->withQueryString()->links() }} --}}
                 </div>
 
@@ -196,21 +232,21 @@
                     <table id="myTableModal" class="table table-striped">
                         <thead>
                             <tr class="text-center">
-                                <th class="col-md-1 text-center">No</th>
-                                <th class="col-md-2 text-center">Nama</th>
-                                <th class="col-md-3 text-center">Nomor</th>
-                                <th class="col-md-3 text-center">Alamat</th>
-                                <th class="col-md-2 text-center">Aksi</th>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Nama</th>
+                                <th class="text-center">Nomor</th>
+                                <th class="text-center">Alamat</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($customer as $cust)
                             <tr class="text-center">
-                                <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                <td class="col-md-2 text-center">{{ $cust->nama }}</td>
-                                <td class="col-md-3 text-center">{{ $cust->nomor }}</td>
-                                <td class="col-md-3 text-center">{{ $cust->alamat }}</td>
-                                <td class="col-md-2 text-center">
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td class="text-center">{{ $cust->nama }}</td>
+                                <td class="text-center">{{ $cust->nomor }}</td>
+                                <td class="text-center">{{ $cust->alamat }}</td>
+                                <td class="text-center">
                                     <div class="text-center">
                                         <a href="{{ url('penjualan/create') }}?customer_id={{ $cust->id }}&customer_nama={{ $cust->nama }}&customer_nomor={{ $cust->nomor }}&customer_alamat={{ $cust->alamat }}" class="btn btn-primary btn-sm">
                                             <i class="fas fa-check-square"></i> Pilih
