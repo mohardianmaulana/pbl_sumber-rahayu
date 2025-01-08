@@ -75,7 +75,7 @@ class PembelianBarangBaruController extends Controller
             ],
             'kategori_id' => 'required|numeric|min:1|max:99999999',
             'supplier_id' => 'required|numeric|min:1|max:99999999',
-            'gambar' => 'nullable|image|file|mimes:jpg,png|min:100|max:2048',
+            'gambar' => 'nullable|image|file|mimes:jpg,png|min:10|max:2048',
         ], [
             'nama.required' => 'Nama Barang harus diisi',
             'nama.regex' => 'Nama Barang tidak boleh menggunakan simbol',
@@ -109,7 +109,7 @@ class PembelianBarangBaruController extends Controller
             'supplier_id.min' => 'Supplier id tidak boleh kurang dari 0',
             'supplier_id.max' => 'Supplier id tidak boleh lebih dari 99999999',
             'supplier_id.numeric' => 'Supplier harus berupa angka',
-            'gambar.min' => 'Ukuran Gambar tidak boleh kurang dari 100 kb',
+            'gambar.min' => 'Ukuran Gambar tidak boleh kurang dari 10 kb',
             'gambar.max' => 'Ukuran Gambar tidak boleh lebih dari 2048 kb',
             'gambar.mimes' => 'Gambar harus berupa file dengan format jpg atau png',
         ]);        
@@ -219,7 +219,7 @@ class PembelianBarangBaruController extends Controller
             ],
             'kategori_id' => 'required|numeric|min:1|max:99999999',
             'supplier_id' => 'required|numeric|min:1|max:99999999',
-            'gambar' => 'nullable|image|file|mimes:jpg,png|min:100|max:2048',
+            'gambar' => 'nullable|image|file|mimes:jpg,png|min:10|max:2048',
         ], [
             'nama.required' => 'Nama Barang harus diisi',
             'nama.regex' => 'Nama Barang tidak boleh menggunakan simbol',
@@ -253,7 +253,7 @@ class PembelianBarangBaruController extends Controller
             'supplier_id.min' => 'Supplier id tidak boleh kurang dari 0',
             'supplier_id.max' => 'Supplier id tidak boleh lebih dari 99999999',
             'supplier_id.numeric' => 'Supplier harus berupa angka',
-            'gambar.min' => 'Ukuran Gambar tidak boleh kurang dari 100 kb',
+            'gambar.min' => 'Ukuran Gambar tidak boleh kurang dari 10 kb',
             'gambar.max' => 'Ukuran Gambar tidak boleh lebih dari 2048 kb',
             'gambar.mimes' => 'Gambar harus berupa file dengan format jpg atau png',
         ]);

@@ -107,7 +107,7 @@
                                                 <i class="fas fa-edit"></i>
                                                 Edit
                                             </a>
-                                            @elseif ($persetujuanIsiForm)
+                                            @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
                                             <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
                                                 <i class="fas fa-edit"></i>
                                                 Edit

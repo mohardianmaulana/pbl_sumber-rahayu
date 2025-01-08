@@ -375,38 +375,24 @@ class PenjualanController extends Controller
     $endOfMonth = Carbon::now()->endOfMonth();
 
     $penjualan = DB::table('penjualan')
+    ->selectRaw("
+        penjualan.id, 
+        penjualan.tanggal_transaksi, 
+        penjualan.bayar, 
+        penjualan.kembali, 
+        string_agg(barang.nama, ', ') AS barang_nama, 
+        SUM(barang_penjualan.jumlah) AS total_item, 
+        SUM(barang_penjualan.harga) AS total_harga, 
+        customer.nama AS nama_customer, 
+        user.name AS nama_user
+    ")
     ->join('barang_penjualan', 'penjualan.id', '=', 'barang_penjualan.penjualan_id')
     ->join('barang', 'barang_penjualan.barang_id', '=', 'barang.id')
     ->join('customer', 'penjualan.customer_id', '=', 'customer.id')
     ->join('user', 'penjualan.user_id', '=', 'user.id')
-    ->select(
-        'penjualan.id',
-        'penjualan.tanggal_transaksi',
-        'penjualan.bayar',
-        'penjualan.kembali',
-        DB::raw('GROUP_CONCAT(barang.nama SEPARATOR ", ") as barang_nama'), // Gabungkan nama barang
-        DB::raw('SUM(barang_penjualan.jumlah) as total_item'), // Jumlah total item
-        DB::raw('SUM(barang_penjualan.harga) as total_harga'), // Total harga
-        'customer.nama as nama_customer',
-        'user.name as nama_user'
-    )
     ->whereBetween('penjualan.tanggal_transaksi', [$startOfMonth, $endOfMonth])
-    ->groupBy(
-        'penjualan.id',
-        'penjualan.tanggal_transaksi',
-        'penjualan.bayar',
-        'penjualan.kembali',
-        'customer.nama',
-        'user.name'
-    ) 
-    ->orderBy('penjualan.tanggal_transaksi', 'desc')
-    ->get();
-
-    // Ambil data penjualan hari ini
-    $penjualanDetail = Penjualan::join('user', 'penjualan.user_id', '=', 'user.id')
-    ->leftJoin('customer', 'penjualan.customer_id', '=', 'customer.id') // Join dengan tabel customer
-    ->select('penjualan.*', 'user.name as user_nama', 'customer.nama as customer_nama') // Pilih nama customer
-    ->orderBy('penjualan.tanggal_transaksi', 'desc')
+    ->groupBy('penjualan.id', 'penjualan.tanggal_transaksi', 'penjualan.bayar', 'penjualan.kembali', 'customer.nama', 'user.name')
+    ->orderByDesc('penjualan.tanggal_transaksi')
     ->get();
 
     return view('penjualan.laporanPenjualan', compact('penjualan', 'penjualanDetail'));

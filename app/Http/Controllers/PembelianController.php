@@ -368,29 +368,22 @@ public function editHapusSesi(Request $request)
 
     // Ambil laporan pembelian dengan filter bulan dan tahun
     $pembelian = DB::table('pembelian')
-        ->join('barang_pembelian', 'pembelian.id', '=', 'barang_pembelian.pembelian_id')
-        ->join('barang', 'barang_pembelian.barang_id', '=', 'barang.id')
-        ->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
-        ->join('user', 'pembelian.user_id', '=', 'user.id')
-        ->select(
-            'pembelian.id',
-            'pembelian.tanggal_transaksi',
-            'supplier.nama as nama_supplier',
-            DB::raw('GROUP_CONCAT(barang.nama SEPARATOR ", ") as barang_nama'),
-            DB::raw('SUM(pembelian.total_harga) as total_harga'),
-            DB::raw('SUM(barang_pembelian.jumlah) as total_item'),
-            'user.name as nama_user',
-        )
-        ->whereBetween('penjualan.tanggal_transaksi', [$startOfMonth, $endOfMonth])
-        ->groupBy('pembelian.id', 'pembelian.tanggal_transaksi', 'supplier.nama', 'user.name')
-        ->orderBy('pembelian.tanggal_transaksi', 'desc')
-        ->get();
-
-    // Ambil data pembelian detail
-    $pembelianDetail = Pembelian::join('user', 'pembelian.user_id', '=', 'user.id')
-    ->leftJoin('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
-    ->select('pembelian.*', 'user.name as user_nama', 'supplier.nama as supplier_nama')
-    ->orderBy('pembelian.tanggal_transaksi', 'desc')
+    ->selectRaw("
+        pembelian.id, 
+        pembelian.tanggal_transaksi, 
+        string_agg(barang.nama, ', ') AS barang_nama, 
+        SUM(barang_pembelian.jumlah) AS total_item, 
+        SUM(barang_pembelian.harga) AS total_harga, 
+        supplier.nama AS nama_supplier, 
+        user.name AS nama_user
+    ")
+    ->join('barang_pembelian', 'pembelian.id', '=', 'barang_pembelian.pembelian_id')
+    ->join('barang', 'barang_pembelian.barang_id', '=', 'barang.id')
+    ->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
+    ->join('user', 'pembelian.user_id', '=', 'user.id')
+    ->whereBetween('pembelian.tanggal_transaksi', [$startOfMonth, $endOfMonth])
+    ->groupBy('pembelian.id', 'pembelian.tanggal_transaksi', 'pembelian.bayar', 'pembelian.kembali', 'supplier.nama', 'user.name')
+    ->orderByDesc('pembelian.tanggal_transaksi')
     ->get();
 
     // Kirim data laporan pembelian ke view

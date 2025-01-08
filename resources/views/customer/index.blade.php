@@ -89,7 +89,7 @@
                                     <td class="text-center">{{ $cust->alamat }}</td>
                                     @if (Auth::check() && Auth::user()->hasRole('admin'))
                                     <td class="text-center">
-                                        <div class="text-center">
+                                        <div class="text-center d-flex align-items-end">
                                             @php
                                             $persetujuanForUser = \App\Models\Persetujuan::where('customer_id', $cust->id)
                                             ->where('user_id', Auth::id())
@@ -109,7 +109,7 @@
                                                 <i class="fas fa-edit"></i>
                                                 Edit
                                             </a>
-                                            @elseif ($persetujuanIsiForm)
+                                            @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
                                             <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
                                                 <i class="fas fa-edit"></i>
                                                 Edit

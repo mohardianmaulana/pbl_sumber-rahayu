@@ -58,7 +58,7 @@ class KategoriController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nama_kategori' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
-            'gambar_kategori' => 'image|file|mimes:jpg,png|min:1|max:2048', // Validasi gambar
+            'gambar_kategori' => 'image|file|mimes:jpg,png|min:10|max:2048', // Validasi gambar
         ], [
             'nama_kategori.required' => 'Nama Kategori wajib diisi',
             'nama_kategori.regex' => 'Nama Kategori hanya boleh mengandung huruf dan spasi',
@@ -68,7 +68,7 @@ class KategoriController extends Controller
             'gambar_kategori.required' => 'Gambar Kategori wajib diisi',
             'gambar_kategori.image' => 'Gambar Kategori harus berupa gambar',
             'gambar_kategori.mimes' => 'Gambar Kategori hanya boleh memiliki format jpg atau png',
-            'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 1 KB',
+            'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 10 KB',
             'gambar_kategori.max' => 'Ukuran Gambar Kategori tidak boleh lebih dari 2048 KB',
         ]);
 
@@ -146,7 +146,7 @@ class KategoriController extends Controller
     // Validasi input
     $request->validate([
         'nama_kategori' => 'required|string|regex:/^[a-zA-Z\s]+$/|min:3|max:50',
-        'gambar_kategori' => 'nullable|image|file|mimes:jpg,png|min:1|max:2048', // Validasi gambar
+        'gambar_kategori' => 'nullable|image|file|mimes:jpg,png|min:10|max:2048', // Validasi gambar
     ], [
         'nama_kategori.required' => 'Nama Kategori wajib diisi',
         'nama_kategori.regex' => 'Nama Kategori hanya boleh mengandung huruf dan spasi',
@@ -156,7 +156,7 @@ class KategoriController extends Controller
         'gambar_kategori.required' => 'Gambar Kategori wajib diisi',
         'gambar_kategori.image' => 'Gambar Kategori harus berupa gambar',
         'gambar_kategori.mimes' => 'Gambar Kategori hanya boleh memiliki format jpg atau png',
-        'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 1 KB',
+        'gambar_kategori.min' => 'Ukuran Gambar Kategori tidak boleh kurang dari 10 KB',
         'gambar_kategori.max' => 'Ukuran Gambar Kategori tidak boleh lebih dari 2048 KB',
     ]);
 
