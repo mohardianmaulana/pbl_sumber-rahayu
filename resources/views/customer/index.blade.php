@@ -94,7 +94,7 @@
                                             $persetujuanForUser = \App\Models\Persetujuan::where('customer_id', $cust->id)
                                             ->where('user_id', Auth::id())
                                             ->where('kerjaAksi', 'update')
-                                            ->where('namaTabel', 'customer')
+                                            ->where('namaTabel', 'Customer')
                                             ->first();
                                             $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
                                             $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;

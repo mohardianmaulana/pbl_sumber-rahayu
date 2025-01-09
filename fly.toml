@@ -1,0 +1,52 @@
+# fly.toml app configuration file generated for sumber-rahayu on 2025-01-07T21:09:01+07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'sumber-rahayu'
+primary_region = 'sin'
+console_command = 'php /var/www/html/artisan tinker'
+
+[build]
+  [build.args]
+    NODE_VERSION = '18'
+    PHP_VERSION = '8.2'
+
+[env]
+  APP_ENV = 'production'
+  LOG_CHANNEL = 'stderr'
+  LOG_LEVEL = 'info'
+  LOG_STDERR_FORMATTER = 'Monolog\Formatter\JsonFormatter'
+  SESSION_DRIVER = 'cookie'
+  SESSION_SECURE_COOKIE = 'true'
+  DB_CONNECTION = 'pgsql'
+  DB_HOST = 'aws-0-ap-southeast-1.pooler.supabase.com'
+  DB_PORT = '5432'
+  DB_DATABASE = 'postgres'
+  DB_USERNAME = 'postgres.yrfpapvpykwzzuikowbo'
+  DB_PASSWORD = 'Sumberrahayu12.'
+  APP_URL = "https://sumber-rahayu.fly.dev"
+  ASSET_URL = "https://sumber-rahayu.fly.dev"
+  BCRYPT_ROUNDS = '12'
+  RECAPTCHA_SITE_KEY='6Ld4xJAqAAAAAJWzYdnYfx4HQ-odDeNidtgb-i9n'
+  RECAPTCHA_SECRET_KEY='6Ld4xJAqAAAAAMSnpC8hM3TQTUCdF3lT92ARklDe'
+  RECAPTCHA_SITE='https://www.google.com/recaptcha/admin/'
+  APP_DEBUG='true'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = false
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[mounts]
+  source = "sumber-rahayu"
+  destination = "/public"
+  processes= ["sumber-rahayu"]

@@ -18,7 +18,8 @@
 
         .table img {
             max-width: 100px;
-            height: auto; /* Proporsional */
+            height: auto;
+            /* Proporsional */
         }
     </style>
 </head>
@@ -50,87 +51,102 @@
                     <div class="my-3 p-3 bg-body shadow-sm"
                         style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
                         @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
+                            <div class="alert alert-success">
+                                {{ session('success') }}
+                            </div>
                         @endif
 
                         <!-- TOMBOL TAMBAH DATA -->
                         <div class="pb-3" style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                <a href="{{ 'supplier/create' }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus fa-xs"></i>
-                                    Tambah Data
-                                </a>
+                                    <a href="{{ 'supplier/create' }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus fa-xs"></i>
+                                        Tambah Data
+                                    </a>
                                 @endif
                             </div>
                         </div>
 
                         <!-- Tabel Responsif -->
                         <div class="table-responsive">
-                        <table id="myTable" class="table table-striped">
-                            <thead>
-                                <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-2 text-center">Nama</th>
-                                    <th class="col-md-3 text-center">Nomor</th>
-                                    <th class="col-md-3 text-center">Alamat</th>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <th class="col-md-2 text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($supplier as $supp)
-                                <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-2 text-center">{{ $supp->nama }}</td>
-                                    <td class="col-md-3 text-center">{{ $supp->nomor }}</td>
-                                    <td class="col-md-3 text-center">{{ $supp->alamat }}</td>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <td class="col-md-2 text-center">
-                                        <div class="text-center d-flex align-items-end">
-                                            @php
-                                            $persetujuanForUser = \App\Models\Persetujuan::where('supplier_id', $supp->id)
-                                            ->where('user_id', Auth::id())
-                                            ->where('kerjaAksi', 'update')
-                                            ->where('namaTabel', 'supplier')
-                                            ->first();
-                                            $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
-                                            $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;
-                                            @endphp
-                                            @if (!$persetujuanForUser)
-                                            <a href="#" onclick="showConfirmModal('{{ url('supplier/' . $supp->id . '/checkEdit') }}')" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @elseif ($persetujuanDisetujui)
-                                            <a href="{{ route('supplier.edit', $supp->id) }}" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
-                                            <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
-                                            @else
-                                            <a href="#" onclick="showWaitModal()" class="btn btn-primary btn-sm mx-2">
-                                                <i class="fas fa-edit"></i>
-                                                Edit
-                                            </a>
+                            <table id="myTable" class="table table-striped">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="col-md-1 text-center">No</th>
+                                        <th class="col-md-2 text-center">Nama</th>
+                                        <th class="col-md-3 text-center">Nomor</th>
+                                        <th class="col-md-3 text-center">Alamat</th>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                            <th class="col-md-2 text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($supplier as $supp)
+                                        <tr class="text-center">
+                                            <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
+                                            <td class="col-md-2 text-center">{{ $supp->nama }}</td>
+                                            <td class="col-md-3 text-center">{{ $supp->nomor }}</td>
+                                            <td class="col-md-3 text-center">{{ $supp->alamat }}</td>
+                                            @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                                <td class="col-md-2 text-center">
+                                                    <div class="text-center d-flex align-items-end">
+                                                        @php
+                                                            $persetujuanForUser = \App\Models\Persetujuan::where(
+                                                                'supplier_id',
+                                                                $supp->id,
+                                                            )
+                                                                ->where('user_id', Auth::id())
+                                                                ->where('kerjaAksi', 'update')
+                                                                ->where('namaTabel', 'Supplier')
+                                                                ->first();
+                                                            $persetujuanIsiForm =
+                                                                $persetujuanForUser &&
+                                                                $persetujuanForUser->kodePersetujuan !== null;
+                                                            $persetujuanDisetujui =
+                                                                $persetujuanIsiForm &&
+                                                                $persetujuanForUser->lagiProses == 1;
+                                                        @endphp
+                                                        {{-- @dd($persetujuanForUser) --}}
+                                                        @if (!$persetujuanForUser)
+                                                            <a href="#"
+                                                                onclick="showConfirmModal('{{ url('supplier/' . $supp->id . '/checkEdit') }}')"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit1
+                                                            </a>
+                                                        @elseif ($persetujuanDisetujui)
+                                                            <a href="{{ route('supplier.edit', $supp->id) }}"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit2
+                                                            </a>
+                                                        @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
+                                                            <a href="#" onclick="showInputCodeModal()"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit3
+                                                            </a>
+                                                        @else
+                                                            <a href="#" onclick="showWaitModal()"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit4
+                                                            </a>
+                                                        @endif
+                                                        <button type="button" class="btn btn-danger btn-sm"
+                                                            data-toggle="modal" data-target="#modalArsipkan"
+                                                            data-id="{{ $supp->id }}">
+                                                            <i class="fas fa-sync-alt"></i> Arsipkan
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             @endif
-                                            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalArsipkan" data-id="{{ $supp->id }}">
-                                                <i class="fas fa-sync-alt"></i> Arsipkan
-                                            </button>
-                                        </div>
-                                    </td>
-                                    @endif
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -159,7 +175,8 @@
     @include('template.script')
 
     <!-- Modal Arsipkan -->
-    <div class="modal fade" id="modalArsipkan" tabindex="-1" role="dialog" aria-labelledby="modalArsipkanLabel" aria-hidden="true">
+    <div class="modal fade" id="modalArsipkan" tabindex="-1" role="dialog" aria-labelledby="modalArsipkanLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -230,10 +247,10 @@
                             <input type="text" class="form-control" id="kode" name="kode" required>
                         </div>
                         @if (count($errors) > 0)
-                    <div style="width:auto; color:#dc4c64; margin-top:0.25rem;">
-                        {{ $errors->first('kode') }}
-                    </div>
-                    @endif
+                            <div style="width:auto; color:#dc4c64; margin-top:0.25rem;">
+                                {{ $errors->first('kode') }}
+                            </div>
+                        @endif
                         <button type="submit" class="btn btn-primary">Kirim</button>
                     </form>
                 </div>
@@ -259,7 +276,7 @@
         $('#modalArsipkan').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget);
             var id = button.data('id');
-            var action = '{{ url("/supplier/arsipkan/") }}/' + id;
+            var action = '{{ url('/supplier/arsipkan/') }}/' + id;
             var modal = $(this);
             modal.find('#formArsipkan').attr('action', action);
         });
