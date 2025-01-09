@@ -43,11 +43,11 @@ class PembelianController extends Controller
     {
         $dataBarang = Session()->get('pembelian_barang', []); // Ambil data barang dari sesi
 
-         // Log data sesi
+        // Log data sesi
         Log::info('Isi sesi pembelian_barang:', $dataBarang);
 
         $supplier_id = $request->query('supplier_id');
-        
+
         // Ambil semua data yang diperlukan untuk form pembelian dari model Pembelian
         $data = Pembelian::buat($supplier_id);
 
@@ -88,61 +88,61 @@ class PembelianController extends Controller
     }
 
     public function tambahSesi(Request $request)
-{
-    // Ambil barang dari sesi
-    $barangPembelian = Session::get('pembelian_barang', []);
+    {
+        // Ambil barang dari sesi
+        $barangPembelian = Session::get('pembelian_barang', []);
 
-    // Jika barang sudah ada di sesi
-    if (isset($barangPembelian[$request->id])) {
-        // Cek sumber permintaan (modal atau scan QR)
-        if ($request->input('source') === 'modal') {
-            // Jika berasal dari modal, kembalikan pesan error
-            return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+        // Jika barang sudah ada di sesi
+        if (isset($barangPembelian[$request->id])) {
+            // Cek sumber permintaan (modal atau scan QR)
+            if ($request->input('source') === 'modal') {
+                // Jika berasal dari modal, kembalikan pesan error
+                return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+            }
+
+            // Tambahkan atau perbarui barang di sesi
+            if (!isset($barangPembelian[$request->id])) {
+                $barangPembelian[$request->id] = [
+                    'nama' => $request->nama,
+                    'harga' => $request->harga,
+                    'jumlah' => $request->jumlah, // Set nilai jumlah langsung dari request
+                ];
+            } else {
+                $barangPembelian[$request->id]['jumlah'] += $request->jumlah; // Tambahkan jumlah
+            }
+            // // Jika berasal dari scan QR, tambahkan jumlah barang
+            // if (!isset($barangPembelian[$request->id]['jumlah'])) {
+            //     $barangPembelian[$request->id]['jumlah'] = 1; // Default jumlah jika belum ada
+            // }
+            // $barangPembelian[$request->id]['jumlah'] += 1; // Tambahkan jumlah
+
+            // Simpan kembali barang ke sesi
+            Session::put('pembelian_barang', $barangPembelian);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Jumlah barang berhasil ditambahkan!',
+                'data' => $barangPembelian,
+            ]);
         }
 
-        // Tambahkan atau perbarui barang di sesi
-        if (!isset($barangPembelian[$request->id])) {
-            $barangPembelian[$request->id] = [
-                'nama' => $request->nama,
-                'harga' => $request->harga,
-                'jumlah' => $request->jumlah, // Set nilai jumlah langsung dari request
-            ];
-        } else {
-            $barangPembelian[$request->id]['jumlah'] += $request->jumlah; // Tambahkan jumlah
-        }
-        // // Jika berasal dari scan QR, tambahkan jumlah barang
-        // if (!isset($barangPembelian[$request->id]['jumlah'])) {
-        //     $barangPembelian[$request->id]['jumlah'] = 1; // Default jumlah jika belum ada
-        // }
-        // $barangPembelian[$request->id]['jumlah'] += 1; // Tambahkan jumlah
+        // Jika barang belum ada di sesi, tambahkan sebagai barang baru
+        $barangPembelian[$request->id] = [
+            'id' => $request->id,
+            'nama' => $request->nama,
+            'harga' => $request->harga,
+            'jumlah' => 1, // Inisialisasi jumlah
+        ];
 
         // Simpan kembali barang ke sesi
         Session::put('pembelian_barang', $barangPembelian);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Jumlah barang berhasil ditambahkan!',
+            'message' => 'Barang berhasil ditambahkan ke sesi!',
             'data' => $barangPembelian,
         ]);
     }
-
-    // Jika barang belum ada di sesi, tambahkan sebagai barang baru
-    $barangPembelian[$request->id] = [
-        'id' => $request->id,
-        'nama' => $request->nama,
-        'harga' => $request->harga,
-        'jumlah' => 1, // Inisialisasi jumlah
-    ];
-
-    // Simpan kembali barang ke sesi
-    Session::put('pembelian_barang', $barangPembelian);
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Barang berhasil ditambahkan ke sesi!',
-        'data' => $barangPembelian,
-    ]);
-}
 
 
 
@@ -186,122 +186,122 @@ class PembelianController extends Controller
     }
 
     public function editTambahSesi(Request $request)
-{
-    // Ambil barang dari sesi
-    $barangEditPembelian = Session::get('edit_pembelian_barang', []);
+    {
+        // Ambil barang dari sesi
+        $barangEditPembelian = Session::get('edit_pembelian_barang', []);
 
-    // Jika barang sudah ada di sesi
-    if (isset($barangEditPembelian[$request->id])) {
-        // Cek sumber permintaan (modal atau scan QR)
-        if ($request->input('source') === 'modal') {
-            return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+        // Jika barang sudah ada di sesi
+        if (isset($barangEditPembelian[$request->id])) {
+            // Cek sumber permintaan (modal atau scan QR)
+            if ($request->input('source') === 'modal') {
+                return response()->json(['status' => 'error', 'message' => 'Barang sudah dipilih.'], 400);
+            }
+
+            // Perbarui jumlah barang
+            $barangEditPembelian[$request->id]['jumlah'] += $request->jumlah;
+
+            // Simpan kembali barang ke sesi
+            Session::put('edit_pembelian_barang', $barangEditPembelian);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Jumlah barang berhasil ditambahkan!',
+                'data' => $barangEditPembelian,
+            ]);
         }
 
-        // Perbarui jumlah barang
-        $barangEditPembelian[$request->id]['jumlah'] += $request->jumlah;
+        // Jika barang belum ada di sesi, tambahkan sebagai barang baru
+        $barangEditPembelian[$request->id] = [
+            'id' => $request->id,
+            'nama' => $request->nama,
+            'harga' => $request->harga,
+            'jumlah' => $request->jumlah, // Inisialisasi jumlah dari request
+        ];
 
         // Simpan kembali barang ke sesi
         Session::put('edit_pembelian_barang', $barangEditPembelian);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Jumlah barang berhasil ditambahkan!',
+            'message' => 'Barang berhasil ditambahkan ke sesi!',
             'data' => $barangEditPembelian,
         ]);
     }
 
-    // Jika barang belum ada di sesi, tambahkan sebagai barang baru
-    $barangEditPembelian[$request->id] = [
-        'id' => $request->id,
-        'nama' => $request->nama,
-        'harga' => $request->harga,
-        'jumlah' => $request->jumlah, // Inisialisasi jumlah dari request
-    ];
 
-    // Simpan kembali barang ke sesi
-    Session::put('edit_pembelian_barang', $barangEditPembelian);
+    public function editHapusSesi(Request $request)
+    {
+        try {
+            // Validasi ID barang
+            $request->validate([
+                'id' => 'required|numeric',
+            ]);
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Barang berhasil ditambahkan ke sesi!',
-        'data' => $barangEditPembelian,
-    ]);
-}
+            $barangId = $request->id;
 
+            // Periksa apakah barang ada di tabel pivot
+            $existsInDatabase = DB::table('barang_pembelian')->where('barang_id', $barangId)->exists();
 
-public function editHapusSesi(Request $request)
-{
-    try {
-        // Validasi ID barang
-        $request->validate([
-            'id' => 'required|numeric',
-        ]);
-
-        $barangId = $request->id;
-
-        // Periksa apakah barang ada di tabel pivot
-        $existsInDatabase = DB::table('barang_pembelian')->where('barang_id', $barangId)->exists();
-
-        if ($existsInDatabase) {
-            // Ambil jumlah barang dari tabel pivot
-            $jumlahPivot = DB::table('barang_pembelian')
-                ->where('barang_id', $barangId)
-                ->value('jumlah_itemporary');
-
-            if ($jumlahPivot !== null) {
-                // Hapus barang dari tabel pivot dengan status 0
-                $deleted = DB::table('barang_pembelian')
+            if ($existsInDatabase) {
+                // Ambil jumlah barang dari tabel pivot
+                $jumlahPivot = DB::table('barang_pembelian')
                     ->where('barang_id', $barangId)
-                    ->where('status', 0)  // Menambahkan kondisi status = 0
-                    ->delete();
-                    
-                if ($deleted) {
-                    // Kurangi jumlah barang di tabel barang
-                    DB::table('barang')
-                        ->where('id', $barangId)
-                        ->decrement('jumlah', $jumlahPivot);
+                    ->value('jumlah_itemporary');
 
-                    return response()->json([
-                        'status' => 'success',
-                        'message' => 'Barang berhasil dihapus dari database, dan jumlah barang diperbarui.',
-                    ]);
+                if ($jumlahPivot !== null) {
+                    // Hapus barang dari tabel pivot dengan status 0
+                    $deleted = DB::table('barang_pembelian')
+                        ->where('barang_id', $barangId)
+                        ->where('status', 0)  // Menambahkan kondisi status = 0
+                        ->delete();
+
+                    if ($deleted) {
+                        // Kurangi jumlah barang di tabel barang
+                        DB::table('barang')
+                            ->where('id', $barangId)
+                            ->decrement('jumlah', $jumlahPivot);
+
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Barang berhasil dihapus dari database, dan jumlah barang diperbarui.',
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Gagal menghapus barang dari database.',
+                        ], 500);
+                    }
                 } else {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Gagal menghapus barang dari database.',
+                        'message' => 'Jumlah barang di tabel pivot tidak ditemukan.',
                     ], 500);
                 }
             } else {
+                // Barang tidak ada di database, hapus dari sesi
+                $data = Session::get('edit_pembelian_barang', []);
+                if (isset($data[$barangId])) {
+                    unset($data[$barangId]); // Hapus barang berdasarkan ID
+                    Session::put('edit_pembelian_barang', $data); // Update sesi
+
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Barang berhasil dihapus dari sesi.',
+                    ]);
+                }
+
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Jumlah barang di tabel pivot tidak ditemukan.',
-                ], 500);
+                    'message' => 'Barang tidak ditemukan di sesi atau database.',
+                ], 404);
             }
-        } else {
-            // Barang tidak ada di database, hapus dari sesi
-            $data = Session::get('edit_pembelian_barang', []);
-            if (isset($data[$barangId])) {
-                unset($data[$barangId]); // Hapus barang berdasarkan ID
-                Session::put('edit_pembelian_barang', $data); // Update sesi
-
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Barang berhasil dihapus dari sesi.',
-                ]);
-            }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Barang tidak ditemukan di sesi atau database.',
-            ], 404);
+                'message' => 'Gagal menghapus barang: ' . $e->getMessage(),
+            ], 500);
         }
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Gagal menghapus barang: ' . $e->getMessage(),
-        ], 500);
     }
-}
 
 
 
@@ -362,33 +362,35 @@ public function editHapusSesi(Request $request)
     }
 
     public function laporan(Request $request)
-{
-    $startOfMonth = Carbon::now()->startOfMonth();
-    $endOfMonth = Carbon::now()->endOfMonth();
+    {
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
 
-    // Ambil laporan pembelian dengan filter bulan dan tahun
-    $pembelian = DB::table('pembelian')
-    ->selectRaw("
-        pembelian.id, 
-        pembelian.tanggal_transaksi, 
-        string_agg(barang.nama, ', ') AS barang_nama, 
-        SUM(barang_pembelian.jumlah) AS total_item, 
-        SUM(barang_pembelian.harga) AS total_harga, 
-        supplier.nama AS nama_supplier, 
-        user.name AS nama_user
-    ")
-    ->join('barang_pembelian', 'pembelian.id', '=', 'barang_pembelian.pembelian_id')
-    ->join('barang', 'barang_pembelian.barang_id', '=', 'barang.id')
-    ->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
-    ->join('user', 'pembelian.user_id', '=', 'user.id')
-    ->whereBetween('pembelian.tanggal_transaksi', [$startOfMonth, $endOfMonth])
-    ->groupBy('pembelian.id', 'pembelian.tanggal_transaksi', 'pembelian.bayar', 'pembelian.kembali', 'supplier.nama', 'user.name')
-    ->orderByDesc('pembelian.tanggal_transaksi')
-    ->get();
+        $pembelian = DB::table('pembelian as p')
+            ->select([
+                'p.id',
+                'p.tanggal_transaksi',
+                DB::raw('string_agg(b.nama, \', \') AS barang_nama'),
+                DB::raw('SUM(bp.jumlah) AS total_item'),
+                DB::raw('SUM(bp.harga) AS total_harga'),
+                's.nama AS nama_supplier',
+                'u.name AS nama_user'
+            ])
+            ->join('barang_pembelian as bp', 'p.id', '=', 'bp.pembelian_id')
+            ->join('barang as b', 'bp.barang_id', '=', 'b.id')
+            ->join('supplier as s', 'p.supplier_id', '=', 's.id')
+            ->join('user as u', 'p.user_id', '=', 'u.id')
+            ->whereBetween('p.tanggal_transaksi', [$startOfMonth, $endOfMonth])
+            ->groupBy('p.id', 'p.tanggal_transaksi', 's.nama', 'u.name')
+            ->orderByDesc('p.tanggal_transaksi')
+            ->get();
 
-    // Kirim data laporan pembelian ke view
-    return view('pembelian.laporanpembelian', compact('pembelian', 'pembelianDetail'));
-}
+        $pembelianDetail = Pembelian::join('user', 'pembelian.user_id', '=', 'user.id')
+            ->leftJoin('supplier', 'pembelian.supplier_id', '=', 'supplier.id') // Join dengan tabel supplier
+            ->select('pembelian.*', 'user.name as user_nama', 'supplier.nama as supplier_nama') // Pilih nama customer
+            ->orderBy('pembelian.tanggal_transaksi', 'desc')->get();
 
 
+        return view('pembelian.laporanPembelian', compact('pembelian', 'pembelianDetail'));
+    }
 }
