@@ -9,22 +9,27 @@
         table {
             width: 100%;
             table-layout: auto;
-            border-collapse: collapse; /* Hilangkan jarak antar sel */
+            border-collapse: collapse;
+            /* Hilangkan jarak antar sel */
         }
 
         .table-responsive {
-            overflow-x: auto; /* Tambahkan scroll horizontal jika tabel terlalu lebar */
+            overflow-x: auto;
+            /* Tambahkan scroll horizontal jika tabel terlalu lebar */
         }
 
         .table td,
         .table th {
-            vertical-align: middle; /* Untuk vertikal */
-            text-align: center; /* Untuk horizontal */
+            vertical-align: middle;
+            /* Untuk vertikal */
+            text-align: center;
+            /* Untuk horizontal */
         }
 
         .table img {
             max-width: 100px;
-            height: auto; /* Proporsional */
+            height: auto;
+            /* Proporsional */
         }
     </style>
 </head>
@@ -56,97 +61,122 @@
                         <h1 class="h3 mb-0 text-gray-800">Daftar Barang</h1>
                     </div>
 
-                    <div class="my-3 p-3 bg-body shadow-sm" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
+                    <div class="my-3 p-3 bg-body shadow-sm"
+                        style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
                         @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
+                            <div class="alert alert-success">
+                                {{ session('success') }}
+                            </div>
                         @endif
 
+                        @include('template.search')
+
                         <div class="table-responsive">
-                        <table class="table table-striped" id="myTable">
-                            <thead>
-                                <tr class="text-center">
-                                    <th class="text-center">No</th>
-                                    <th class="text-center">Nama</th>
-                                    <th class="text-center">Kategori</th>
-                                    <th class="text-center">Harga Beli</th>
-                                    <th class="text-center">Harga Jual</th>
-                                    <th class="text-center">Jumlah</th>
-                                    <th class="text-center">Gambar</th>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <th class="text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($barang as $item)
-                                <tr class="text-center">
-                                    <td class="text-center">{{ $loop->iteration }}</td>
-                                    <td class="text-center">{{ $item->nama }}</td>
-                                    <td class="text-center">{{ $item->kategori_nama }}</td>
-                                    <td class="text-center">
-                                        @if(isset($rataRataHargaBeli[$item->id]))
-                                        Rp. {{ number_format($rataRataHargaBeli[$item->id], 0, ',', '.') }}
-                                        @else
-                                        -
-                                        @endif</td>
-                                    <td class="text-center">Rp. {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
-                                    <td class="text-center">{{ $item->jumlah }}</td>
-                                    <td class="text-center">
-                                        <img src="{{ asset('img/' . ($item->gambar ?: $item->kategori_gambar)) }}" alt="Gambar" style="max-width: 200px; max-height: 200px;">
-                                    </td>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <td>
-                                        <div class="text-center d-flex align-items-end">
-                                            @if ($item->jumlah > $item->minLimit && $item->jumlah < $item->maxLimit)
-                                                <i class="fas fa-circle fa-lg" style="color:transparent"></i>
-                                                @elseif ($item->jumlah <= $item->minLimit)
-                                                    <i class="fas fa-exclamation-circle fa-lg" style="color: red"></i>
-                                                    @elseif ($item->jumlah >= $item->maxLimit)
-                                                    <i class="fas fa-exclamation-circle fa-lg" style="color: orange"></i>
-                                                    @endif
-                                                    @php
-                                                    $persetujuanForUser = \App\Models\Persetujuan::where('barang_id', $item->id)
-                                                    ->where('user_id', Auth::id())
-                                                    ->where('kerjaAksi', 'update')
-                                                    ->where('namaTabel', 'Barang')
-                                                    ->first();
-                                                    $persetujuanIsiForm = $persetujuanForUser && $persetujuanForUser->kodePersetujuan !== null;
-                                                    $persetujuanDisetujui = $persetujuanIsiForm && $persetujuanForUser->lagiProses == 1;
-                                                    @endphp
-                                                    @if (!$persetujuanForUser)
-                                                    <a href="#" onclick="showConfirmModal('{{ url('barang/' . $item->id . '/checkEdit') }}')" class="btn btn-primary btn-sm mx-2">
-                                                        <i class="fas fa-edit"></i>
-                                                        Edit
-                                                    </a>
-                                                    @elseif ($persetujuanDisetujui)
-                                                    <a href="{{ route('barang.edit', $item->id) }}" class="btn btn-primary btn-sm mx-2">
-                                                        <i class="fas fa-edit"></i>
-                                                        Edit
-                                                    </a>
-                                                    @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
-                                                    <a href="#" onclick="showInputCodeModal()" class="btn btn-primary btn-sm mx-2">
-                                                        <i class="fas fa-edit"></i>
-                                                        Edit
-                                                    </a>
-                                                    @else
-                                                    <a href="#" onclick="showWaitModal()" class="btn btn-primary btn-sm mx-2">
-                                                        <i class="fas fa-edit"></i>
-                                                        Edit
-                                                    </a>
-                                                    @endif
-                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalArsipkan" data-id="{{ $item->id }}">
-                                                        <i class="fas fa-sync-alt"></i> Arsipkan
-                                                    </button>
-                                        </div>
-                                    </td>
-                                    @endif
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                            <table class="table table-striped nowrap" id="myTable">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="text-center">No</th>
+                                        <th class="text-center">Nama</th>
+                                        <th class="text-center">Kategori</th>
+                                        <th class="text-center">Harga Beli</th>
+                                        <th class="text-center">Harga Jual</th>
+                                        <th class="text-center">Jumlah</th>
+                                        <th class="text-center">Gambar</th>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                            <th class="text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($barang as $item)
+                                        <tr class="text-center">
+                                            <td class="text-center">{{ $loop->iteration }}</td>
+                                            <td class="text-center">{{ $item->nama }}</td>
+                                            <td class="text-center">{{ $item->kategori_nama }}</td>
+                                            <td class="text-center">
+                                                @if (isset($rataRataHargaBeli[$item->id]))
+                                                    Rp. {{ number_format($rataRataHargaBeli[$item->id], 0, ',', '.') }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="text-center">Rp.
+                                                {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
+                                            <td class="text-center">{{ $item->jumlah }}</td>
+                                            <td class="text-center">
+                                                <img src="{{ asset('img/' . ($item->gambar ?: $item->kategori_gambar)) }}"
+                                                    alt="Gambar" style="max-width: 200px; max-height: 200px;">
+                                            </td>
+                                            @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                                <td>
+                                                    <div class="text-center d-flex align-items-end">
+                                                        @if ($item->jumlah > $item->minLimit && $item->jumlah < $item->maxLimit)
+                                                            <i class="fas fa-circle fa-lg"
+                                                                style="color:transparent"></i>
+                                                        @elseif ($item->jumlah <= $item->minLimit)
+                                                            <i class="fas fa-exclamation-circle fa-lg"
+                                                                style="color: red"></i>
+                                                        @elseif ($item->jumlah >= $item->maxLimit)
+                                                            <i class="fas fa-exclamation-circle fa-lg"
+                                                                style="color: orange"></i>
+                                                        @endif
+                                                        @php
+                                                            $persetujuanForUser = \App\Models\Persetujuan::where(
+                                                                'barang_id',
+                                                                $item->id,
+                                                            )
+                                                                ->where('user_id', Auth::id())
+                                                                ->where('kerjaAksi', 'update')
+                                                                ->where('namaTabel', 'Barang')
+                                                                ->first();
+                                                            $persetujuanIsiForm =
+                                                                $persetujuanForUser &&
+                                                                $persetujuanForUser->kodePersetujuan !== null;
+                                                            $persetujuanDisetujui =
+                                                                $persetujuanIsiForm &&
+                                                                $persetujuanForUser->lagiProses == 1;
+                                                        @endphp
+                                                        @if (!$persetujuanForUser)
+                                                            <a href="#"
+                                                                onclick="showConfirmModal('{{ url('barang/' . $item->id . '/checkEdit') }}')"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit
+                                                            </a>
+                                                        @elseif ($persetujuanDisetujui)
+                                                            <a href="{{ route('barang.edit', $item->id) }}"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit
+                                                            </a>
+                                                        @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
+                                                            <a href="#" onclick="showInputCodeModal()"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit
+                                                            </a>
+                                                        @else
+                                                            <a href="#" onclick="showWaitModal()"
+                                                                class="btn btn-primary btn-sm mx-2">
+                                                                <i class="fas fa-edit"></i>
+                                                                Edit
+                                                            </a>
+                                                        @endif
+                                                        <button type="button" class="btn btn-danger btn-sm"
+                                                            data-toggle="modal" data-target="#modalArsipkan"
+                                                            data-id="{{ $item->id }}">
+                                                            <i class="fas fa-sync-alt"></i> Arsipkan
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
+
+                        @include('template.paging')
                     </div>
 
                 </div>
@@ -175,7 +205,8 @@
     @include('template.script')
 
     <!-- Modal Arsipkan -->
-    <div class="modal fade" id="modalArsipkan" tabindex="-1" role="dialog" aria-labelledby="modalArsipkanLabel" aria-hidden="true">
+    <div class="modal fade" id="modalArsipkan" tabindex="-1" role="dialog" aria-labelledby="modalArsipkanLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -246,9 +277,9 @@
                             <input type="text" class="form-control" id="kode" name="kode" required>
                         </div>
                         @if (count($errors) > 0)
-                        <div style="width:auto; color:#dc4c64; margin-top:0.25rem;">
-                            {{ $errors->first('kode') }}
-                        </div>
+                            <div style="width:auto; color:#dc4c64; margin-top:0.25rem;">
+                                {{ $errors->first('kode') }}
+                            </div>
                         @endif
                         <button type="submit" class="btn btn-primary">Kirim</button>
                     </form>
@@ -276,7 +307,7 @@
         $('#modalArsipkan').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget);
             var id = button.data('id');
-            var action = '{{ url("/barang/arsipkan/") }}/' + id;
+            var action = '{{ url('/barang/arsipkan/') }}/' + id;
             var modal = $(this);
             modal.find('#formArsipkan').attr('action', action);
         });

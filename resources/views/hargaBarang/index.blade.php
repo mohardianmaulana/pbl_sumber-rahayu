@@ -91,8 +91,10 @@
                     </div>
                 </div> --}}
 
+                @include('template.search')
+
                 <div class="table-responsive">
-                <table id="myTable" class="table table-striped">
+                <table id="myTable" class="table table-striped nowrap">
                     <thead>
                         <tr class="text-center">
                             <th class="text-center">No</th>
@@ -131,6 +133,8 @@
                     </tbody>
                 </table>
             </div>
+
+            @include('template.paging')
                 {{-- {{ $kategori->withQueryString()->links() }} --}}
             </div>
 

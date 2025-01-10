@@ -1,0 +1,113 @@
+.table-controls {
+    position: relative;
+}
+
+#table-search {
+    width: 100%;
+}
+
+#table-pagination {
+    width: 100%;
+    text-align: right;
+}
+
+#table-search .dt-start {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#table-search .dt-end {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#table-search .dt-start .dt-length select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#table-search .dt-start .dt-length label {
+    margin-left: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+#table-search .dt-end .dt-search input {
+    padding: 8px;
+    width: 180px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#table-search .dt-end .dt-search label {
+    margin-right: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+#table-pagination .dt-layout-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+#table-pagination .dt-layout-cell.dt-start {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#table-pagination .dt-layout-cell.dt-end {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#table-pagination .dt-info {
+    font-size: 14px;
+    color: #333;
+}
+
+#table-pagination .dt-paging {
+    display: flex;
+    align-items: center;
+}
+
+#table-pagination .dt-paging-button {
+    padding: 6px 12px;
+    margin: 0 2px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+#table-pagination .dt-paging-button:disabled {
+    background-color: #f1f1f1;
+    color: #888;
+    cursor: not-allowed;
+}
+
+#table-pagination .dt-paging-button.current {
+    background-color: #007bff;
+    color: #fff;
+}
+
+#table-pagination .dt-paging-button:hover:not(:disabled) {
+    background-color: #0056b3;
+    color: #fff;
+}
+
+#table-pagination .dt-paging-button:focus {
+    outline: none;
+}

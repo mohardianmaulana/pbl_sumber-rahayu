@@ -68,9 +68,11 @@
                             </div>
                         </div>
 
+                        @include('template.search')
+
                         <!-- Tabel Responsif -->
                         <div class="table-responsive">
-                            <table id="myTable" class="table table-striped">
+                            <table id="myTable" class="table table-striped nowrap">
                                 <thead>
                                     <tr class="text-center">
                                         <th class="col-md-1 text-center">No</th>
@@ -114,25 +116,25 @@
                                                                 onclick="showConfirmModal('{{ url('supplier/' . $supp->id . '/checkEdit') }}')"
                                                                 class="btn btn-primary btn-sm mx-2">
                                                                 <i class="fas fa-edit"></i>
-                                                                Edit1
+                                                                Edit
                                                             </a>
                                                         @elseif ($persetujuanDisetujui)
                                                             <a href="{{ route('supplier.edit', $supp->id) }}"
                                                                 class="btn btn-primary btn-sm mx-2">
                                                                 <i class="fas fa-edit"></i>
-                                                                Edit2
+                                                                Edit
                                                             </a>
                                                         @elseif ($persetujuanIsiForm && !$persetujuanDisetujui)
                                                             <a href="#" onclick="showInputCodeModal()"
                                                                 class="btn btn-primary btn-sm mx-2">
                                                                 <i class="fas fa-edit"></i>
-                                                                Edit3
+                                                                Edit
                                                             </a>
                                                         @else
                                                             <a href="#" onclick="showWaitModal()"
                                                                 class="btn btn-primary btn-sm mx-2">
                                                                 <i class="fas fa-edit"></i>
-                                                                Edit4
+                                                                Edit
                                                             </a>
                                                         @endif
                                                         <button type="button" class="btn btn-danger btn-sm"
@@ -148,6 +150,8 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        @include('template.paging')
                     </div>
                 </div>
                 <!-- /.container-fluid -->

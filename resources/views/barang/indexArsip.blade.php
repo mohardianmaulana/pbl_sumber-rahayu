@@ -84,8 +84,10 @@
                         </div>
                         @endif
 
+                        @include('template.search')
+
                         <div class="table-responsive">
-                        <table class="table table-striped" id="myTable">
+                        <table class="table table-striped nowrap" id="myTable">
                             <thead>
                                 <tr class="text-center">
                                     <th class="col-md-1 text-center">No</th>
@@ -124,6 +126,8 @@
                             </tbody>
                         </table>
                         </div>
+
+                        @include('template.paging')
                     </div>
 
                 </div>

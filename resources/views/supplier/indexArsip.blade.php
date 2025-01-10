@@ -18,10 +18,12 @@
 
         .table img {
             max-width: 100px;
-            height: auto; /* Proporsional */
+            height: auto;
+            /* Proporsional */
         }
 
         @media (max-width: 767px) {
+
             .table td,
             .table th {
                 font-size: 12px;
@@ -68,54 +70,60 @@
                     <div class="my-3 p-3 bg-body shadow-sm"
                         style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); border-radius:15px;">
                         @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
+                            <div class="alert alert-danger">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         @endif
                         @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
+                            <div class="alert alert-success">
+                                {{ session('success') }}
+                            </div>
                         @endif
 
+                        @include('template.search')
+
                         <div class="table-responsive">
-                        <table id="myTable" class="table table-striped">
-                            <thead>
-                                <tr class="text-center">
-                                    <th class="col-md-1 text-center">No</th>
-                                    <th class="col-md-2 text-center">Nama</th>
-                                    <th class="col-md-3 text-center">Nomor</th>
-                                    <th class="col-md-3 text-center">Alamat</th>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <th class="col-md-2 text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($supplier as $supp)
-                                <tr class="text-center">
-                                    <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
-                                    <td class="col-md-2 text-center">{{ $supp->nama }}</td>
-                                    <td class="col-md-3 text-center">{{ $supp->nomor }}</td>
-                                    <td class="col-md-3 text-center">{{ $supp->alamat }}</td>
-                                    @if (Auth::check() && Auth::user()->hasRole('admin'))
-                                    <td class="col-md-2 text-center">
-                                        <div class="text-center">
-                                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalPulihkan" data-id="{{ $supp->id }}">
-                                                <i class="fas fa-sync-alt"></i> Pulihkan
-                                            </button>
-                                        </div>
-                                    </td>
-                                    @endif
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            <table id="myTable" class="table table-striped nowrap">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="col-md-1 text-center">No</th>
+                                        <th class="col-md-2 text-center">Nama</th>
+                                        <th class="col-md-3 text-center">Nomor</th>
+                                        <th class="col-md-3 text-center">Alamat</th>
+                                        @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                            <th class="col-md-2 text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($supplier as $supp)
+                                        <tr class="text-center">
+                                            <td class="col-md-1 text-center">{{ $loop->iteration }}</td>
+                                            <td class="col-md-2 text-center">{{ $supp->nama }}</td>
+                                            <td class="col-md-3 text-center">{{ $supp->nomor }}</td>
+                                            <td class="col-md-3 text-center">{{ $supp->alamat }}</td>
+                                            @if (Auth::check() && Auth::user()->hasRole('admin'))
+                                                <td class="col-md-2 text-center">
+                                                    <div class="text-center">
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                            data-toggle="modal" data-target="#modalPulihkan"
+                                                            data-id="{{ $supp->id }}">
+                                                            <i class="fas fa-sync-alt"></i> Pulihkan
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @include('template.paging')
                     </div>
                 </div>
                 <!-- /.container-fluid -->
@@ -143,7 +151,8 @@
     @include('template.script')
 
     <!-- Modal Pulihkan -->
-    <div class="modal fade" id="modalPulihkan" tabindex="-1" role="dialog" aria-labelledby="modalPulihkanLabel" aria-hidden="true">
+    <div class="modal fade" id="modalPulihkan" tabindex="-1" role="dialog" aria-labelledby="modalPulihkanLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -238,7 +247,7 @@
         $('#modalPulihkan').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget);
             var id = button.data('id');
-            var action = '{{ url("/supplier/pulihkan/") }}/' + id;
+            var action = '{{ url('/supplier/pulihkan/') }}/' + id;
             var modal = $(this);
             modal.find('#formPulihkan').attr('action', action);
         });

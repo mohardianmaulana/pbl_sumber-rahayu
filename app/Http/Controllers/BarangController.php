@@ -24,22 +24,22 @@ class BarangController extends Controller
         // Jika ada kategori yang dipilih
         if ($request->has('kategori_id') && $request->kategori_id != '') {
             $barang = Barang::join('kategori', 'barang.kategori_id', '=', 'kategori.id')
-                        ->join('harga_barang', 'barang.id', '=', 'harga_barang.barang_id')
-                        ->where('barang.kategori_id', $request->kategori_id)
-                        ->select(
-                            'barang.id',
-                            'barang.nama',
-                            'barang.kategori_id',
-                            'kategori.nama_kategori as kategori_nama',
-                            'kategori.gambar_kategori as kategori_gambar',  // Menambahkan gambar kategori
-                            'barang.gambar',  // Menambahkan gambar barang
-                            'barang.jumlah',
-                            'barang.minLimit',
-                            'barang.maxLimit',
-                            'harga_barang.harga_jual'  // Pastikan harga ikut disertakan jika dibutuhkan
-                        )
-                        ->with('kategori')  // Mengambil relasi kategori jika dibutuhkan
-                        ->get();
+                ->join('harga_barang', 'barang.id', '=', 'harga_barang.barang_id')
+                ->where('barang.kategori_id', $request->kategori_id)
+                ->select(
+                    'barang.id',
+                    'barang.nama',
+                    'barang.kategori_id',
+                    'kategori.nama_kategori as kategori_nama',
+                    'kategori.gambar_kategori as kategori_gambar',  // Menambahkan gambar kategori
+                    'barang.gambar',  // Menambahkan gambar barang
+                    'barang.jumlah',
+                    'barang.minLimit',
+                    'barang.maxLimit',
+                    'harga_barang.harga_jual'  // Pastikan harga ikut disertakan jika dibutuhkan
+                )
+                ->with('kategori')  // Mengambil relasi kategori jika dibutuhkan
+                ->get();
         } else {
             // Jika tidak ada kategori yang dipilih, tampilkan semua barang
             $barang = Barang::getAllBarangWithKategoriAndHarga();
